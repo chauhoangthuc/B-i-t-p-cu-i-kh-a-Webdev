@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useTrip } from '../../context/TripContext.jsx';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 import { postgrest } from '../../lib/postgrest.js';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -42,6 +43,7 @@ const COVER_PRESETS = [
 export default function TripsPage() {
   const { currentUser, session } = useAuth();
   const { setCurrentTripId } = useTrip();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -221,9 +223,11 @@ export default function TripsPage() {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-[#191c1d] tracking-tight">Danh sách chuyến đi</h1>
+          <h1 className="text-3xl font-extrabold text-[#191c1d] tracking-tight">{t('trips_list')}</h1>
           <p className="text-sm text-[#424754]">
-            Chào mừng trở lại, {currentUser?.name || 'bạn'}. Bạn có {trips.length} chuyến đi trong hệ thống.
+            {language === 'vi' 
+              ? `Chào mừng trở lại, ${currentUser?.name || 'bạn'}. Bạn có ${trips.length} chuyến đi trong hệ thống.` 
+              : `Welcome back, ${currentUser?.name || 'user'}. You have ${trips.length} trips in the system.`}
           </p>
         </div>
         <button 
@@ -231,7 +235,7 @@ export default function TripsPage() {
           className="inline-flex items-center gap-2 bg-[#0058be] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md hover:bg-[#2170e4] active:scale-95 transition-all"
         >
           <span className="material-symbols-outlined text-[18px]">add</span>
-          Tạo chuyến đi mới
+          {t('create_trip_btn')}
         </button>
       </div>
 
@@ -245,7 +249,7 @@ export default function TripsPage() {
               : 'bg-white border border-[#c2c6d6] text-[#424754] hover:border-[#0058be] hover:text-[#0058be]'
           }`}
         >
-          Tất cả
+          {t('tab_all')}
         </button>
         <button
           onClick={() => setActiveTab('upcoming')}
@@ -255,7 +259,7 @@ export default function TripsPage() {
               : 'bg-white border border-[#c2c6d6] text-[#424754] hover:border-[#0058be] hover:text-[#0058be]'
           }`}
         >
-          Sắp tới / Đang diễn ra
+          {t('tab_upcoming')}
         </button>
         <button
           onClick={() => setActiveTab('completed')}
@@ -265,7 +269,7 @@ export default function TripsPage() {
               : 'bg-white border border-[#c2c6d6] text-[#424754] hover:border-[#0058be] hover:text-[#0058be]'
           }`}
         >
-          Đã hoàn thành
+          {t('tab_completed')}
         </button>
         <button
           onClick={() => setActiveTab('planned')}
@@ -275,7 +279,7 @@ export default function TripsPage() {
               : 'bg-white border border-[#c2c6d6] text-[#424754] hover:border-[#0058be] hover:text-[#0058be]'
           }`}
         >
-          Đã lên kế hoạch
+          {t('tab_planned')}
         </button>
       </div>
 
@@ -522,6 +526,7 @@ export default function TripsPage() {
 }
 
 function SortableTripItem({ trip, handleSelectTrip, currentUser, navigate }) {
+  const { language, t } = useLanguage();
   const {
     attributes,
     listeners,
@@ -542,13 +547,13 @@ function SortableTripItem({ trip, handleSelectTrip, currentUser, navigate }) {
   const isCompleted = trip.end_date < todayStr;
   const isUpcoming = trip.start_date > todayStr;
   
-  let statusText = 'Đang diễn ra';
+  let statusText = language === 'vi' ? 'Đang diễn ra' : 'Ongoing';
   let statusBg = 'bg-[#d5e0f8] text-[#0058be]';
   if (isCompleted) {
-    statusText = 'Đã hoàn thành';
+    statusText = t('status_completed');
     statusBg = 'bg-[#e2e2e3] text-[#424754]';
   } else if (isUpcoming) {
-    statusText = 'Sắp tới';
+    statusText = t('status_upcoming');
     statusBg = 'bg-blue-50 text-[#2170e4] border border-blue-100';
   }
 
@@ -582,14 +587,14 @@ function SortableTripItem({ trip, handleSelectTrip, currentUser, navigate }) {
             <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
               isCreator ? 'bg-[#0058be]/10 text-[#0058be]' : 'bg-gray-100 text-[#424754]'
             }`}>
-              {isCreator ? 'Trưởng nhóm' : 'Thành viên'}
+              {isCreator ? (language === 'vi' ? 'Trưởng nhóm' : 'Leader') : (language === 'vi' ? 'Thành viên' : 'Member')}
             </span>
             <span 
               onClick={(e) => {
                 e.stopPropagation();
                 navigate('/edit-trip/' + trip.id);
               }}
-              title="Chỉnh sửa chuyến đi"
+              title={language === 'vi' ? 'Chỉnh sửa chuyến đi' : 'Edit trip'}
               className="material-symbols-outlined text-[#c2c6d6] hover:text-[#0058be] text-[18px] cursor-pointer"
             >
               edit
@@ -607,7 +612,7 @@ function SortableTripItem({ trip, handleSelectTrip, currentUser, navigate }) {
             </div>
             <div className="flex items-center gap-1.5">
               <span className="material-symbols-outlined text-[16px]">location_on</span>
-              <span>{trip.destination || 'Chưa cập nhật'}</span>
+              <span>{trip.destination || (language === 'vi' ? 'Chưa cập nhật' : 'Not updated')}</span>
             </div>
           </div>
         </div>
@@ -624,7 +629,7 @@ function SortableTripItem({ trip, handleSelectTrip, currentUser, navigate }) {
             {...attributes} 
             {...listeners} 
             className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-[#0058be] p-1.5 hover:bg-gray-100 rounded-lg flex items-center justify-center transition-all touch-none"
-            title="Kéo thả để sắp xếp"
+            title={t('drag_to_sort')}
             onClick={(e) => e.stopPropagation()} // Prevent selecting trip
           >
             <span className="material-symbols-outlined text-[20px]">drag_indicator</span>

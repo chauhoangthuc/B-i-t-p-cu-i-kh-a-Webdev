@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { postgrest } from '../../lib/postgrest.js';
 import { useTrip } from '../../context/TripContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 import { io } from 'socket.io-client';
 import {
   DndContext,
@@ -40,6 +41,7 @@ const COVER_PRESETS = [
 export default function CalendarPage() {
   const { currentTripId, currentTrip } = useTrip();
   const { currentUser, session } = useAuth();
+  const { language, t } = useLanguage();
   
   // State for Trips instead of Events
   const [trips, setTrips] = useState([]);
@@ -284,10 +286,10 @@ export default function CalendarPage() {
       {/* Page Sub-Header & Actions */}
       <section className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#c2c6d6]">
         <div>
-          <h2 className="text-xl font-bold text-[#191c1d]">Lịch trình & Hoạt động</h2>
+          <h2 className="text-xl font-bold text-[#191c1d]">{language === 'vi' ? 'Lịch trình & Hoạt động' : 'Schedule & Activities'}</h2>
           <div className="flex items-center gap-1.5 mt-1 text-[#727785] text-xs">
             <span className="material-symbols-outlined text-[16px]">calendar_today</span>
-            <span>Tháng {currentMonth + 1}, {currentYear}</span>
+            <span>{language === 'vi' ? `Tháng ${currentMonth + 1}, ${currentYear}` : `${new Date(currentYear, currentMonth).toLocaleString('en-US', { month: 'long' })} ${currentYear}`}</span>
           </div>
         </div>
         
@@ -298,7 +300,7 @@ export default function CalendarPage() {
               onClick={handleToday}
               className="px-3 py-1.5 text-xs font-semibold text-[#424754] hover:text-[#191c1d] transition-colors"
             >
-              Hôm nay
+              {language === 'vi' ? 'Hôm nay' : 'Today'}
             </button>
             <div className="h-4 w-[1px] bg-gray-300 mx-1"></div>
             <button 
@@ -317,7 +319,7 @@ export default function CalendarPage() {
           
           {/* Specific date selector */}
           <div className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-xl border border-gray-200">
-            <span className="text-[10px] font-bold text-[#424754]">Đi tới ngày:</span>
+            <span className="text-[10px] font-bold text-[#424754]">{language === 'vi' ? 'Đi tới ngày:' : 'Go to date:'}</span>
             <input
               type="date"
               className="bg-transparent border-none p-0 text-xs focus:ring-0 w-28 text-[#424754] font-medium outline-none cursor-pointer"
@@ -336,7 +338,7 @@ export default function CalendarPage() {
             className="flex items-center gap-1.5 bg-[#0058be] text-white px-4 py-2 rounded-xl font-bold text-xs shadow-sm hover:bg-[#2170e4] active:scale-95 transition-all"
           >
             <span className="material-symbols-outlined text-[16px]">add</span>
-            Tạo chuyến đi mới
+            {t('create_trip_btn')}
           </button>
         </div>
       </section>
@@ -346,7 +348,7 @@ export default function CalendarPage() {
         {/* Left Column: Month Calendar */}
         <div className="flex-grow bg-white border border-[#c2c6d6] rounded-2xl p-4 shadow-sm">
           <div className="grid grid-cols-7 border-l border-t border-[#c2c6d6] rounded-tl-lg overflow-hidden">
-            {['THỨ HAI', 'THỨ BA', 'THỨ TƯ', 'THỨ NĂM', 'THỨ SÁU', 'THỨ BẢY', 'CHỦ NHẬT'].map((dayName, idx) => (
+            {(language === 'vi' ? ['THỨ HAI', 'THỨ BA', 'THỨ TƯ', 'THỨ NĂM', 'THỨ SÁU', 'THỨ BẢY', 'CHỦ NHẬT'] : ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']).map((dayName, idx) => (
               <div 
                 key={idx}
                 className="p-2 text-center text-[10px] font-bold text-[#727785] border-r border-b border-[#c2c6d6] bg-gray-50"

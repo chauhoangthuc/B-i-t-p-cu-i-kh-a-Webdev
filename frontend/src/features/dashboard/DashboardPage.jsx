@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useTrip } from '../../context/TripContext.jsx';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 import { postgrest } from '../../lib/postgrest.js';
 import { useNavigate, Link } from 'react-router-dom';
 import {
@@ -21,6 +22,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 
 function SortableTripCard({ trip, isSelected, setCurrentTripId, navigate }) {
+  const { t } = useLanguage();
   const {
     attributes,
     listeners,
@@ -42,16 +44,16 @@ function SortableTripCard({ trip, isSelected, setCurrentTripId, navigate }) {
   const isCompleted = today > trip.end_date;
   const isUpcoming = today < trip.start_date;
 
-  let statusText = 'LÊN KẾ HOẠCH';
+  let statusText = t('status_planned');
   let statusBg = 'bg-[#edeeef] text-[#424754]';
   if (isOngoing) {
-    statusText = 'ĐANG DIỄN RA';
+    statusText = t('status_ongoing');
     statusBg = 'bg-[#d5e0f8] text-[#0058be]';
   } else if (isCompleted) {
-    statusText = 'ĐÃ HOÀN THÀNH';
+    statusText = t('status_completed');
     statusBg = 'bg-gray-100 text-gray-500';
   } else if (isUpcoming) {
-    statusText = 'SẮP TỚI';
+    statusText = t('status_upcoming');
     statusBg = 'bg-blue-50 text-blue-600 border border-blue-100';
   }
 
@@ -67,7 +69,7 @@ function SortableTripCard({ trip, isSelected, setCurrentTripId, navigate }) {
         {...attributes} 
         {...listeners} 
         className="absolute top-3 right-3 w-7 h-7 bg-white/95 hover:bg-white border border-[#c2c6d6] rounded-lg flex items-center justify-center cursor-grab active:cursor-grabbing text-gray-400 hover:text-[#0058be] z-10 opacity-0 group-hover:opacity-100 transition-all duration-200"
-        title="Kéo thả để sắp xếp"
+        title={t('drag_to_sort')}
       >
         <span className="material-symbols-outlined text-[18px]">drag_indicator</span>
       </div>
@@ -132,6 +134,7 @@ function SortableTripCard({ trip, isSelected, setCurrentTripId, navigate }) {
 export default function DashboardPage() {
   const { currentUser } = useAuth();
   const { currentTripId, setCurrentTripId, currentTrip } = useTrip();
+  const { language, t } = useLanguage();
   const navigate = useNavigate();
 
   // Trips lists
@@ -156,9 +159,9 @@ export default function DashboardPage() {
   // Helper to determine time of day greeting
   const getGreeting = () => {
     const hr = new Date().getHours();
-    if (hr < 12) return 'Chào buổi sáng';
-    if (hr < 18) return 'Chào buổi chiều';
-    return 'Chào buổi tối';
+    if (hr < 12) return t('welcome_morning');
+    if (hr < 18) return language === 'vi' ? 'Chào buổi chiều' : 'Good afternoon';
+    return language === 'vi' ? 'Chào buổi tối' : 'Good evening';
   };
 
   // Sensors for dnd-kit
@@ -313,11 +316,11 @@ export default function DashboardPage() {
   // Generate category chart items
   const totalCatAmt = Object.values(stats.categoryBreakdown).reduce((a, b) => a + b, 0) || 1;
   const categoriesList = [
-    { key: 'transport', label: 'Di chuyển', color: '#0058be', bg: 'bg-[#0058be]' },
-    { key: 'accommodation', label: 'Lưu trú', color: '#2170e4', bg: 'bg-[#2170e4]' },
-    { key: 'food', label: 'Ăn uống', color: '#727785', bg: 'bg-[#727785]' },
-    { key: 'ticket', label: 'Vé tham quan', color: '#c2c6d6', bg: 'bg-[#c2c6d6]' },
-    { key: 'other', label: 'Khác', color: '#e0e2ec', bg: 'bg-[#e0e2ec]' }
+    { key: 'transport', label: t('category_transport'), color: '#0058be', bg: 'bg-[#0058be]' },
+    { key: 'accommodation', label: t('category_accommodation'), color: '#2170e4', bg: 'bg-[#2170e4]' },
+    { key: 'food', label: t('category_food'), color: '#727785', bg: 'bg-[#727785]' },
+    { key: 'ticket', label: t('category_ticket'), color: '#c2c6d6', bg: 'bg-[#c2c6d6]' },
+    { key: 'other', label: t('category_other'), color: '#e0e2ec', bg: 'bg-[#e0e2ec]' }
   ];
 
   return (
@@ -325,12 +328,12 @@ export default function DashboardPage() {
       {/* 1. Header Greeting Section */}
       <div className="space-y-1">
         <h1 className="text-3xl font-extrabold text-[#191c1d] tracking-tight">
-          {getGreeting()}, {currentUser?.name || 'Bạn'}! 👋
+          {getGreeting()}, {currentUser?.name || (language === 'vi' ? 'Bạn' : 'User')}! 👋
         </h1>
         <p className="text-sm text-[#424754]">
           {currentTrip 
-            ? `Sẵn sàng cho chuyến phiêu lưu tiếp theo tại ${currentTrip.name}?`
-            : 'Hãy tạo hoặc chọn một chuyến đi để bắt đầu lên kế hoạch!'}
+            ? `${t('ready_adventure')} ${currentTrip.name}?`
+            : t('ready_adventure_none')}
         </p>
       </div>
 
@@ -343,17 +346,17 @@ export default function DashboardPage() {
           {/* Card: Chuyến đi sắp tới */}
           <div className="bg-white border border-[#c2c6d6] rounded-2xl p-6 shadow-sm space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-bold text-[#191c1d]">Chuyến đi sắp tới</h2>
+              <h2 className="text-lg font-bold text-[#191c1d]">{t('upcoming_trips')}</h2>
               <Link to="/trips" className="text-xs font-semibold text-[#0058be] hover:underline">
-                Xem tất cả
+                {t('view_all')}
               </Link>
             </div>
 
             {tripsLoading ? (
-              <div className="text-center py-12 text-sm text-[#727785]">Đang tải chuyến đi...</div>
+              <div className="text-center py-12 text-sm text-[#727785]">{t('loading_trips')}</div>
             ) : trips.length === 0 ? (
               <div className="bg-[#f8f9fa] border border-[#c2c6d6] border-dashed rounded-xl p-8 text-center text-sm text-[#727785]">
-                Chưa có chuyến đi nào được tạo.
+                {t('no_trips_created')}
               </div>
             ) : (
               <DndContext
@@ -389,7 +392,7 @@ export default function DashboardPage() {
               <div className="flex justify-between items-center text-[#727785]">
                 <div className="flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-[20px] text-[#0058be]">payments</span>
-                  <span className="text-sm font-bold text-[#191c1d]">Tổng chi phí</span>
+                  <span className="text-sm font-bold text-[#191c1d]">{t('total_expenses')}</span>
                 </div>
               </div>
               
@@ -398,7 +401,7 @@ export default function DashboardPage() {
                   {stats.totalExpenses.toLocaleString()}đ
                 </p>
                 <p className="text-xs text-[#34a853] font-semibold flex items-center gap-1">
-                  📈 ~-12% so với tháng trước
+                  📈 ~-12% {language === 'vi' ? 'so với tháng trước' : 'vs last month'}
                 </p>
               </div>
 
@@ -406,7 +409,7 @@ export default function DashboardPage() {
               <div className="space-y-3 pt-2">
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs text-[#424754]">
-                    <span>Cá nhân</span>
+                    <span>{t('personal')}</span>
                     <span className="font-semibold">{stats.personalExpenses.toLocaleString()}đ</span>
                   </div>
                   <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -419,7 +422,7 @@ export default function DashboardPage() {
 
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs text-[#424754]">
-                    <span>Nhóm</span>
+                    <span>{t('group')}</span>
                     <span className="font-semibold">{(stats.totalExpenses - stats.personalExpenses).toLocaleString()}đ</span>
                   </div>
                   <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -436,7 +439,7 @@ export default function DashboardPage() {
             <div className="bg-white border border-[#c2c6d6] rounded-2xl p-6 shadow-sm flex flex-col justify-between">
               <div className="flex items-center gap-1.5 text-[#191c1d]">
                 <span className="material-symbols-outlined text-[20px] text-[#0058be]">donut_large</span>
-                <span className="text-sm font-bold">Tỷ lệ chi tiêu</span>
+                <span className="text-sm font-bold">{t('expense_ratio')}</span>
               </div>
 
               <div className="flex items-center justify-between gap-4 py-2">
@@ -482,13 +485,13 @@ export default function DashboardPage() {
                   <span className="material-symbols-outlined text-[20px]">severe_cold</span>
                 </div>
                 <div>
-                  <span className="text-[10px] font-bold uppercase text-[#ba1a1a] tracking-wider block">Cảnh báo thời tiết</span>
+                  <span className="text-[10px] font-bold uppercase text-[#ba1a1a] tracking-wider block">{t('weather_warning')}</span>
                   <h3 className="text-sm font-bold text-[#ba1a1a] line-clamp-1">{weatherAlert.reason}</h3>
                 </div>
               </div>
 
               <p className="text-xs text-[#ba1a1a] leading-relaxed">
-                Yêu cầu đề xuất: "{weatherAlert.suggested_action}". Hãy xem xét và điều chỉnh lịch trình của bạn.
+                {t('weather_warning_desc').replace('{action}', weatherAlert.suggested_action)}
               </p>
 
               <div className="space-y-2 pt-1">
@@ -497,13 +500,13 @@ export default function DashboardPage() {
                   className="w-full bg-[#ba1a1a] text-white hover:bg-[#961212] py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1"
                 >
                   <span className="material-symbols-outlined text-[16px]">schedule_send</span>
-                  Dời lịch trình (ChangeRequest)
+                  {t('change_request_btn')}
                 </button>
                 <button 
                   onClick={() => setWeatherAlert(null)}
                   className="w-full bg-transparent hover:bg-red-100 text-[#ba1a1a] py-2 rounded-xl text-xs font-bold transition-all"
                 >
-                  Bỏ qua cảnh báo
+                  {t('dismiss_warning')}
                 </button>
               </div>
             </div>
@@ -514,10 +517,10 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-amber-500">wb_sunny</span>
-                <span className="text-xs font-bold text-[#0058be]">Thời tiết hôm nay</span>
+                <span className="text-xs font-bold text-[#0058be]">{t('weather_today')}</span>
               </div>
-              <h4 className="font-bold text-sm text-[#191c1d]">Thời tiết ổn định</h4>
-              <p className="text-xs text-[#424754] leading-relaxed">Không phát hiện cảnh báo thời tiết bất thường tại địa điểm của bạn. Chúc bạn có chuyến đi vui vẻ!</p>
+              <h4 className="font-bold text-sm text-[#191c1d]">{t('weather_stable')}</h4>
+              <p className="text-xs text-[#424754] leading-relaxed">{t('weather_stable_desc')}</p>
             </div>
           )}
 
@@ -526,18 +529,18 @@ export default function DashboardPage() {
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-[#0058be]">group_add</span>
-                <h2 className="text-sm font-bold text-[#191c1d]">Lời mời mới nhất</h2>
+                <h2 className="text-sm font-bold text-[#191c1d]">{t('latest_invitations')}</h2>
               </div>
               <span className="bg-[#0058be] text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">
-                {invitations.length} Mới
+                {invitations.length} {t('new_invitation_badge')}
               </span>
             </div>
 
             {invitationsLoading ? (
-              <div className="text-center py-6 text-xs text-[#727785]">Đang tải lời mời...</div>
+              <div className="text-center py-6 text-xs text-[#727785]">{language === 'vi' ? 'Đang tải lời mời...' : 'Loading invitations...'}</div>
             ) : invitations.length === 0 ? (
               <div className="bg-[#f8f9fa] border border-[#c2c6d6] border-dashed rounded-xl p-6 text-center text-xs text-[#727785]">
-                Không có lời mời nào mới.
+                {t('no_new_invitations')}
               </div>
             ) : (
               <div className="space-y-4 max-h-64 overflow-y-auto pr-1">
