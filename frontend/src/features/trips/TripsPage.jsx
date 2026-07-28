@@ -43,7 +43,7 @@ const COVER_PRESETS = [
 export default function TripsPage() {
   const { currentUser, session } = useAuth();
   const { setCurrentTripId } = useTrip();
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
 
