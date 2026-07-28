@@ -178,6 +178,20 @@ export default function ExpensesPage() {
     setSelectedShares(newShares);
   };
 
+  if (!currentTripId) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] bg-white rounded-xl border border-[#c2c6d6] p-8 max-w-2xl mx-auto shadow-sm text-center">
+        <div className="w-16 h-16 bg-[#e8def8] rounded-full flex items-center justify-center mb-4">
+          <span className="material-symbols-outlined text-[32px] text-[#6750a4]">receipt_long</span>
+        </div>
+        <h2 className="text-xl font-bold text-[#191c1d] mb-2">Chưa chọn chuyến đi</h2>
+        <p className="text-sm text-gray-500 mb-6 max-w-sm">
+          Vui lòng tạo một chuyến đi mới hoặc chọn một chuyến đi có sẵn ở thanh tiêu đề phía trên để bắt đầu quản lý chi tiêu.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
       {/* Left Columns - Form & List */}
