@@ -15,7 +15,7 @@
 ## 📌 Mục lục
 * [📖 Tổng quan](#-tổng-quan)
 * [✨ Tính năng nổi bật](#-tính-năng-nổi-bật)
-* [💻 Công nghệ sử dụng](#-công nghệ-sử-dụng)
+* [💻 Công nghệ sử dụng](#-công-nghệ-sử-dụng)
 * [🔗 Link Tài nguyên & Repo](#-link-tài-nguyên--repo)
 * [📊 So sánh tính năng với architecture.md](#-so-sánh-tính-năng-so-với-architecturemd)
 * [📁 Cấu trúc dự án](#-cấu-trúc-dự-án)
