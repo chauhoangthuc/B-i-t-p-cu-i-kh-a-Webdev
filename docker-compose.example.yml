@@ -1,0 +1,137 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: trip_postgres
+    environment:
+      POSTGRES_DB: tripmanager
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: supersecretpassword
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/migrations/000_auth_uid.sql:/docker-entrypoint-initdb.d/000_auth_uid.sql:ro
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d tripmanager" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:RELEASE.2023-09-04T19-57-37Z
+    container_name: trip_minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadminpassword
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  gotrue:
+    image: supabase/gotrue:v2.15.0
+    container_name: trip_gotrue
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "9999:9999"
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      API_EXTERNAL_URL: http://localhost:9999
+
+      GOTRUE_DB_DRIVER: postgres
+      DATABASE_URL: postgres://postgres:supersecretpassword@postgres:5432/tripmanager?sslmode=disable
+      GOTRUE_DB_MIGRATIONS_PATH: /usr/local/etc/gotrue/migrations
+
+      GOTRUE_SITE_URL: http://localhost:5173
+      GOTRUE_URI_ALLOW_LIST: http://localhost:5173/*
+
+      GOTRUE_JWT_SECRET: super-secret-jwt-token-with-at-least-32-characters-long
+      GOTRUE_JWT_EXP: 3600
+      GOTRUE_JWT_ALGORITHM: HS256
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_MAILER_AUTOCONFIRM: "true"
+
+      # Cấu hình Google OAuth (Thay thông tin của bạn vào đây)
+      GOTRUE_EXTERNAL_GOOGLE_ENABLED: "true"
+      GOTRUE_EXTERNAL_GOOGLE_CLIENT_ID: "YOUR_GOOGLE_CLIENT_ID"
+      GOTRUE_EXTERNAL_GOOGLE_SECRET: "YOUR_GOOGLE_CLIENT_SECRET"
+
+  db-init:
+    image: postgres:15-alpine
+    container_name: trip_db_init
+    depends_on:
+      gotrue:
+        condition: service_started
+    volumes:
+      - ./db/migrations:/migrations:ro
+    environment:
+      PGPASSWORD: supersecretpassword
+    entrypoint: >
+      sh -c " set -e && echo 'Checking if database is already initialized...' && if psql -h postgres -U postgres -d tripmanager -c \"SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'profiles';\" | grep -q '1'; then echo 'Database is already initialized. Skipping migrations.' && exit 0; fi && echo 'Waiting 5s for GoTrue to finish migrating auth.users...' && sleep 5 && echo 'Running 001_initial_schema.sql...' && psql -h postgres -U postgres -d tripmanager -v ON_ERROR_STOP=1 -f /migrations/001_initial_schema.sql && echo 'Running 002_rls_policies.sql...' && psql -h postgres -U postgres -d tripmanager -v ON_ERROR_STOP=1 -f /migrations/002_rls_policies.sql && echo 'Running 003_rpc_functions.sql...' && psql -h postgres -U postgres -d tripmanager -v ON_ERROR_STOP=1 -f /migrations/003_rpc_functions.sql && echo 'All migrations applied successfully.' "
+
+  postgrest:
+    image: postgrest/postgrest:v12.2.0
+    container_name: trip_postgrest
+    depends_on:
+      postgres:
+        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
+    ports:
+      - "3000:3000"
+    environment:
+      PGRST_DB_URI: postgres://postgres:supersecretpassword@postgres:5432/tripmanager
+      PGRST_DB_SCHEMA: public
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: super-secret-jwt-token-with-at-least-32-characters-long
+      PGRST_PORT: 3000
+      PGRST_DB_EXTRA_SEARCH_PATH: public
+
+  jobs-service:
+    build: ./jobs-service
+    container_name: trip_jobs_service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      postgrest:
+        condition: service_started
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: postgres://postgres:supersecretpassword@postgres:5432/tripmanager?sslmode=disable
+      WS_PORT: 4000
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: 587
+      SMTP_SECURE: "false"
+      SMTP_USER: "YOUR_EMAIL@gmail.com"
+      SMTP_PASS: "YOUR_SMTP_APP_PASSWORD"
+      WEATHER_API_URL: https://api.open-meteo.com/v1/forecast
+
+  frontend:
+    build: ./frontend
+    container_name: trip_frontend
+    depends_on:
+      postgrest:
+        condition: service_started
+      jobs-service:
+        condition: service_started
+    ports:
+      - "80:80"
+
+volumes:
+  postgres_data:
+  minio_data:

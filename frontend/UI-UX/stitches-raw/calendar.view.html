@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>TripManager - Lịch trình chuyến đi</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-auto-rows: minmax(120px, auto);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e7e8e9;
+            border-radius: 10px;
+        }
+
+        .sidebar-transition {
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#93000a",
+                        "on-background": "#191c1d",
+                        "secondary-fixed-dim": "#bcc7de",
+                        "on-secondary-fixed-variant": "#3c475a",
+                        "on-tertiary-fixed-variant": "#004883",
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#f0f1f2",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed": "#d8e3fb",
+                        "primary-fixed": "#d8e2ff",
+                        "on-primary": "#ffffff",
+                        "tertiary-container": "#2676c8",
+                        "surface-variant": "#e1e3e4",
+                        "on-primary-container": "#fefcff",
+                        "on-secondary-container": "#586377",
+                        "tertiary-fixed-dim": "#a4c9ff",
+                        "surface-container-high": "#e7e8e9",
+                        "on-surface": "#191c1d",
+                        "outline-variant": "#c2c6d6",
+                        "on-primary-fixed-variant": "#004395",
+                        "surface-container": "#edeeef",
+                        "surface-bright": "#f8f9fa",
+                        "on-secondary-fixed": "#111c2d",
+                        "surface-container-low": "#f3f4f5",
+                        "surface-tint": "#005ac2",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-surface-variant": "#424754",
+                        "tertiary-fixed": "#d4e3ff",
+                        "primary-container": "#2170e4",
+                        "inverse-primary": "#adc6ff",
+                        "tertiary": "#005da8",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-tertiary-fixed": "#001c39",
+                        "primary": "#0058be",
+                        "secondary-container": "#d5e0f8",
+                        "surface": "#f8f9fa",
+                        "on-primary-fixed": "#001a42",
+                        "background": "#f8f9fa",
+                        "outline": "#727785",
+                        "error": "#ba1a1a",
+                        "secondary": "#545f73",
+                        "on-tertiary-container": "#fdfcff",
+                        "inverse-surface": "#2e3132",
+                        "surface-dim": "#d9dadb",
+                        "error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "sidebar-width": "240px",
+                        "md": "16px",
+                        "base": "4px",
+                        "sm": "8px",
+                        "container-max": "1280px",
+                        "gutter": "24px",
+                        "xl": "32px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"]
+                    }
+                },
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-background text-on-background flex min-h-screen overflow-hidden">
+    <!-- Sidebar Navigation -->
+    <aside
+        class="sidebar-transition group fixed left-0 top-0 z-[60] flex h-screen w-[72px] flex-col border-r border-outline-variant bg-surface py-lg hover:w-sidebar-width overflow-hidden">
+        <div class="mb-xl px-4">
+            <div class="flex items-center gap-4">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary">
+                    <span class="material-symbols-outlined">travel_explore</span>
+                </div>
+                <div class="opacity-0 transition-opacity group-hover:opacity-100 whitespace-nowrap">
+                    <h1 class="font-headline-sm text-headline-sm font-bold text-primary">TripManager</h1>
+                    <p class="text-[10px] uppercase tracking-wider text-on-surface-variant">Explorer Edition</p>
+                </div>
+            </div>
+        </div>
+        <!-- Profile Section -->
+        <div class="mb-xl px-4">
+            <div class="flex items-center gap-4">
+                <div class="relative shrink-0">
+                    <div class="h-10 w-10 overflow-hidden rounded-xl border border-outline-variant">
+                        <img alt="Alex Rivers" class="h-full w-full object-cover"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqOhBCsTOkzbNsO4t1dIb5oCwviyc16jQmee7s6ba1KIZnP1FCh_08WLnEd1VqtJzjQN6KEBircwE35kZv4TFSrsG7p1lY3R8NgkSe9YB0u9E3wJGdmcXtWZ_0vRNWOyWOlUAcSbVoluzlPMpdGKUHOCOlOwm691UGomQMzAPwdswetOcyUut_e3HxBbK8YUxYL5G6YH3iZQTPJ_s5jis7o85noRQBE8dbAINXW2eEwXiSXJGpg4TlWBUlsQP70PAYUqML3otTJMs" />
+                    </div>
+                    <div class="absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-surface bg-green-500">
+                    </div>
+                </div>
+                <div class="opacity-0 transition-opacity group-hover:opacity-100 whitespace-nowrap">
+                    <p class="font-bold text-on-surface">Alex Rivers</p>
+                    <span class="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">PRO
+                        MEMBER</span>
+                </div>
+            </div>
+        </div>
+        <nav class="flex-1 space-y-1 px-3">
+            <a class="flex items-center gap-4 rounded-lg px-3 py-2 text-on-surface-variant transition-colors hover:bg-surface-container-high"
+                href="#">
+                <span class="material-symbols-outlined shrink-0">dashboard</span>
+                <span
+                    class="font-body-md text-body-md opacity-0 transition-opacity group-hover:opacity-100 whitespace-nowrap">Dashboard</span>
+            </a>
+            <a class="flex items-center gap-4 rounded-lg px-3 py-2 text-on-surface-variant transition-colors hover:bg-surface-container-high"
+                href="#">
+                <span class="material-symbols-outlined shrink-0">flight_takeoff</span>
+                <span
+                    class="font-body-md text-body-md opacity-0 transition-opacity group-hover:opacity-100 whitespace-nowrap">Trips</span>
+            </a>
+            <a class="flex items-center gap-4 rounded-lg bg-secondary-container px-3 py-2 text-primary font-bold border-r-4 border-primary"
+                href="#">
+                <span class="material-symbols-outlined shrink-0">calendar_month</span>
+                <span
+                    class="font-body-md text-body-md opacity-0 transition-opacity group-hover:opacity-100 whitespace-nowrap">Calendar</span>
+            </a>
+            <a class="flex items-center gap-4 rounded-lg px-3 py-2 text-on-surface-variant transition-colors hover:bg-surface-container-high"
+                href="#">
+                <span class="material-symbols-outlined shrink-0">payments</span>
+                <span
+                    class="font-body-md text-body-md opacity-0 transition-opacity group-hover:opacity-100 whitespace-nowrap">Expenses</span>
+            </a>
+        </nav>
+        <div class="mt-auto border-t border-outline-variant px-3 pt-md">
+            <button
+                class="flex w-full items-center gap-4 rounded-lg px-3 py-2 text-error transition-colors hover:bg-error/10">
+                <span class="material-symbols-outlined shrink-0">logout</span>
+                <span
+                    class="font-body-md text-body-md opacity-0 transition-opacity group-hover:opacity-100 whitespace-nowrap font-medium">Logout</span>
+            </button>
+        </div>
+    </aside>
+    <!-- Main Content Area -->
+    <main class="flex-1 ml-[72px] flex flex-col h-screen overflow-hidden">
+        <!-- Top Bar -->
+        <header
+            class="h-16 flex items-center justify-between px-lg border-b border-outline-variant bg-surface/80 backdrop-blur-md sticky top-0 z-50">
+            <div class="flex items-center gap-lg">
+                <div
+                    class="flex items-center gap-2 bg-surface-container-low px-4 py-2 rounded-full border border-outline-variant cursor-pointer hover:bg-surface-container-high transition-colors group shadow-sm">
+                    <span class="material-symbols-outlined text-[18px] text-primary">location_on</span>
+                    <span class="font-label-md text-label-md font-bold uppercase tracking-wider">Đà Nẵng Summer
+                        '24</span>
+                    <span
+                        class="material-symbols-outlined text-[18px] text-on-surface-variant transition-transform group-hover:rotate-180">keyboard_arrow_down</span>
+                </div>
+                <div
+                    class="hidden lg:flex items-center gap-2 bg-surface-container px-4 py-2 rounded-xl border border-transparent focus-within:border-primary transition-all w-64 group">
+                    <span class="material-symbols-outlined text-on-surface-variant text-[20px]">search</span>
+                    <input class="bg-transparent border-none focus:ring-0 text-sm w-full p-0"
+                        placeholder="Tìm sự kiện, địa điểm..." type="text" />
+                </div>
+            </div>
+            <div class="flex items-center gap-md">
+                <button
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-surface-container transition-colors text-sm font-semibold text-on-surface-variant">
+                    <span class="material-symbols-outlined text-[20px]">language</span>
+                    VI
+                </button>
+                <button
+                    class="relative p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">
+                    <span class="material-symbols-outlined">notifications</span>
+                    <span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+                </button>
+                <div class="h-8 w-px bg-outline-variant mx-1"></div>
+                <div
+                    class="flex items-center gap-2 cursor-pointer hover:bg-surface-container p-1 rounded-full transition-colors pl-2">
+                    <div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+                        <img alt="Alex Rivers" class="w-full h-full object-cover"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqOhBCsTOkzbNsO4t1dIb5oCwviyc16jQmee7s6ba1KIZnP1FCh_08WLnEd1VqtJzjQN6KEBircwE35kZv4TFSrsG7p1lY3R8NgkSe9YB0u9E3wJGdmcXtWZ_0vRNWOyWOlUAcSbVoluzlPMpdGKUHOCOlOwm691UGomQMzAPwdswetOcyUut_e3HxBbK8YUxYL5G6YH3iZQTPJ_s5jis7o85noRQBE8dbAINXW2eEwXiSXJGpg4TlWBUlsQP70PAYUqML3otTJMs" />
+                    </div>
+                    <span class="material-symbols-outlined text-on-surface-variant">expand_more</span>
+                </div>
+            </div>
+        </header>
+        <!-- Page Sub-Header & Actions -->
+        <section class="px-lg py-md flex flex-wrap items-center justify-between gap-md bg-surface-bright">
+            <div>
+                <h2 class="font-headline-md text-headline-md text-on-background">Lịch trình chuyến đi</h2>
+                <div class="flex items-center gap-xs mt-1 text-on-surface-variant">
+                    <span class="material-symbols-outlined text-[16px]">calendar_today</span>
+                    <span class="text-sm">Tháng 6, 2024</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-md">
+                <!-- Navigation -->
+                <div class="flex items-center bg-surface-container p-1 rounded-xl">
+                    <button class="px-4 py-2 text-sm font-medium text-on-surface-variant hover:text-on-surface">Hôm
+                        nay</button>
+                    <div class="h-4 w-[1px] bg-outline-variant mx-1"></div>
+                    <button class="p-2 text-on-surface-variant hover:text-on-surface transition-colors">
+                        <span class="material-symbols-outlined">chevron_left</span>
+                    </button>
+                    <button class="p-2 text-on-surface-variant hover:text-on-surface transition-colors">
+                        <span class="material-symbols-outlined">chevron_right</span>
+                    </button>
+                </div>
+                <!-- View Switcher -->
+                <div class="flex items-center bg-surface-container p-1 rounded-xl">
+                    <button
+                        class="px-4 py-2 text-sm font-semibold bg-white text-primary rounded-lg shadow-sm">Tháng</button>
+                    <button
+                        class="px-4 py-2 text-sm font-medium text-on-surface-variant hover:text-on-surface">Tuần</button>
+                    <button
+                        class="px-4 py-2 text-sm font-medium text-on-surface-variant hover:text-on-surface">Ngày</button>
+                </div>
+                <button
+                    class="flex items-center gap-2 bg-primary text-on-primary px-lg py-2.5 rounded-xl font-semibold hover:opacity-90 transition-all shadow-sm">
+                    <span class="material-symbols-outlined">add</span>
+                    Thêm sự kiện
+                </button>
+            </div>
+        </section>
+        <!-- Calendar Container -->
+        <div class="flex-1 flex overflow-hidden">
+            <!-- Main Grid -->
+            <div class="flex-1 overflow-y-auto custom-scrollbar bg-white p-lg">
+                <div class="calendar-grid border-l border-t border-outline-variant">
+                    <!-- Day Headers -->
+                    <div
+                        class="p-3 text-center text-xs font-bold text-on-surface-variant border-r border-b border-outline-variant bg-surface-container-low">
+                        THỨ HAI</div>
+                    <div
+                        class="p-3 text-center text-xs font-bold text-on-surface-variant border-r border-b border-outline-variant bg-surface-container-low">
+                        THỨ BA</div>
+                    <div
+                        class="p-3 text-center text-xs font-bold text-on-surface-variant border-r border-b border-outline-variant bg-surface-container-low">
+                        THỨ TƯ</div>
+                    <div
+                        class="p-3 text-center text-xs font-bold text-on-surface-variant border-r border-b border-outline-variant bg-surface-container-low">
+                        THỨ NĂM</div>
+                    <div
+                        class="p-3 text-center text-xs font-bold text-on-surface-variant border-r border-b border-outline-variant bg-surface-container-low">
+                        THỨ SÁU</div>
+                    <div
+                        class="p-3 text-center text-xs font-bold text-on-surface-variant border-r border-b border-outline-variant bg-surface-container-low">
+                        THỨ BẢY</div>
+                    <div
+                        class="p-3 text-center text-xs font-bold text-on-surface-variant border-r border-b border-outline-variant bg-surface-container-low">
+                        CHỦ NHẬT</div>
+                    <!-- Row 1: Empty Days -->
+                    <div class="p-3 border-r border-b border-outline-variant bg-surface-container-lowest opacity-40">27
+                    </div>
+                    <div class="p-3 border-r border-b border-outline-variant bg-surface-container-lowest opacity-40">28
+                    </div>
+                    <div class="p-3 border-r border-b border-outline-variant bg-surface-container-lowest opacity-40">29
+                    </div>
+                    <div class="p-3 border-r border-b border-outline-variant bg-surface-container-lowest opacity-40">30
+                    </div>
+                    <div class="p-3 border-r border-b border-outline-variant bg-surface-container-lowest opacity-40">31
+                    </div>
+                    <div class="p-3 border-r border-b border-outline-variant">1</div>
+                    <div class="p-3 border-r border-b border-outline-variant">2</div>
+                    <!-- Row 2 -->
+                    <div class="p-3 border-r border-b border-outline-variant flex flex-col gap-1">
+                        <span class="text-sm font-semibold mb-1">3</span>
+                        <div
+                            class="bg-primary text-on-primary text-[11px] px-2 py-1 rounded font-medium flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[12px]">flight</span> Bay đi Đà Nẵng
+                        </div>
+                    </div>
+                    <div class="p-3 border-r border-b border-outline-variant">
+                        <span class="text-sm font-semibold mb-1">4</span>
+                        <div
+                            class="bg-primary text-on-primary text-[11px] px-2 py-1 rounded font-medium flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[12px]">hotel</span> Check-in Khách sạn
+                        </div>
+                    </div>
+                    <div class="p-3 border-r border-b border-outline-variant relative bg-surface-container-low">
+                        <span class="text-sm font-semibold mb-1">5</span>
+                        <div
+                            class="bg-green-500 text-white text-[11px] px-2 py-1 rounded font-medium flex items-center gap-1 shadow-sm">
+                            <span class="material-symbols-outlined text-[12px]">restaurant</span> Ăn tối Seafood
+                        </div>
+                        <div class="absolute inset-0 border-2 border-primary/20 pointer-events-none"></div>
+                    </div>
+                    <div class="p-3 border-r border-b border-outline-variant">
+                        <span class="text-sm font-semibold mb-1">6</span>
+                        <div
+                            class="bg-surface-container-high text-on-surface-variant text-[11px] px-2 py-1 rounded font-medium flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[12px]">landscape</span> Tham quan Bà Nà Hills
+                        </div>
+                    </div>
+                    <div class="p-3 border-r border-b border-outline-variant">
+                        <span class="text-sm font-semibold mb-1">7</span>
+                        <div
+                            class="bg-error/10 text-error text-[11px] px-2 py-1 rounded font-medium flex items-center gap-1 line-through border border-error/20">
+                            <span class="material-symbols-outlined text-[12px]">surfing</span> Lướt ván
+                        </div>
+                    </div>
+                    <div class="p-3 border-r border-b border-outline-variant">
+                        <span class="text-sm font-semibold mb-1">8</span>
+                        <div
+                            class="bg-amber-500/10 text-amber-700 text-[11px] px-2 py-1 rounded font-medium flex items-center gap-1 border border-amber-500/30">
+                            <span class="material-symbols-outlined text-[12px]">groups</span> Họp nhóm
+                        </div>
+                    </div>
+                    <div class="p-3 border-r border-b border-outline-variant"><span
+                            class="text-sm font-semibold">9</span></div>
+                    <!-- Row 3 & Beyond -->
+                    <div class="p-3 border-r border-b border-outline-variant"><span
+                            class="text-sm font-semibold">10</span></div>
+                    <div class="p-3 border-r border-b border-outline-variant"><span
+                            class="text-sm font-semibold">11</span></div>
+                    <div class="p-3 border-r border-b border-outline-variant"><span
+                            class="text-sm font-semibold">12</span></div>
+                    <div class="p-3 border-r border-b border-outline-variant"><span
+                            class="text-sm font-semibold">13</span></div>
+                    <div class="p-3 border-r border-b border-outline-variant"><span
+                            class="text-sm font-semibold">14</span></div>
+                    <div class="p-3 border-r border-b border-outline-variant"><span
+                            class="text-sm font-semibold">15</span></div>
+                    <div class="p-3 border-r border-b border-outline-variant"><span
+                            class="text-sm font-semibold">16</span></div>
+                    <div class="p-3 border-r border-b border-outline-variant"><span
+                            class="text-sm font-semibold">17</span></div>
+                    <div class="p-3 border-r border-b border-outline-variant"><span
+                            class="text-sm font-semibold">18</span></div>
+                    <div class="p-3 border-r border-b border-outline-variant"><span
+                            class="text-sm font-semibold">19</span></div>
+                    <div class="p-3 border-r border-b border-outline-variant"><span
+                            class="text-sm font-semibold">20</span></div>
+                    <div class="p-3 border-r border-b border-outline-variant"><span
+                            class="text-sm font-semibold">21</span></div>
+                    <div class="p-3 border-r border-b border-outline-variant"><span
+                            class="text-sm font-semibold">22</span></div>
+                    <div class="p-3 border-r border-b border-outline-variant"><span
+                            class="text-sm font-semibold">23</span></div>
+                </div>
+            </div>
+            <!-- Right Sidebar: Agenda -->
+            <aside class="w-[320px] bg-surface-bright border-l border-outline-variant flex flex-col p-lg">
+                <div class="flex items-center justify-between mb-lg">
+                    <h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">Sự kiện sắp tới</h3>
+                    <button class="text-primary text-sm font-semibold hover:underline">Tất cả</button>
+                </div>
+                <div class="space-y-4 overflow-y-auto custom-scrollbar flex-1 pr-2">
+                    <!-- Date Group -->
+                    <div>
+                        <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-3">Hôm nay -
+                            05/06</p>
+                        <div class="space-y-3">
+                            <div
+                                class="p-3 bg-white border border-outline-variant rounded-2xl shadow-sm hover:border-primary/50 transition-colors cursor-pointer group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span
+                                        class="text-[10px] font-bold px-2 py-0.5 rounded bg-green-100 text-green-700 uppercase">Ongoing</span>
+                                    <span class="text-xs text-on-surface-variant">19:30</span>
+                                </div>
+                                <h4 class="font-semibold text-sm group-hover:text-primary transition-colors">Ăn tối
+                                    Seafood</h4>
+                                <p class="text-xs text-on-surface-variant mt-1">Hải sản Năm Đảnh, Sơn Trà</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Date Group -->
+                    <div>
+                        <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-3">Ngày mai -
+                            06/06</p>
+                        <div class="space-y-3">
+                            <div
+                                class="p-3 bg-white border border-outline-variant rounded-2xl shadow-sm hover:border-primary/50 transition-colors cursor-pointer group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span
+                                        class="text-[10px] font-bold px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant uppercase">Upcoming</span>
+                                    <span class="text-xs text-on-surface-variant">08:00</span>
+                                </div>
+                                <h4 class="font-semibold text-sm group-hover:text-primary transition-colors">Tham quan
+                                    Bà Nà Hills</h4>
+                                <p class="text-xs text-on-surface-variant mt-1">Cáp treo, Cầu Vàng, Làng Pháp</p>
+                            </div>
+                            <div
+                                class="p-3 bg-white border border-outline-variant rounded-2xl shadow-sm opacity-60 hover:opacity-100 transition-all cursor-not-allowed">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span
+                                        class="text-[10px] font-bold px-2 py-0.5 rounded bg-error/10 text-error uppercase">Cancelled</span>
+                                    <span class="text-xs text-on-surface-variant">16:00</span>
+                                </div>
+                                <h4 class="font-semibold text-sm line-through">Lướt ván tại Mỹ Khê</h4>
+                                <p class="text-xs text-on-surface-variant mt-1">Hoạt động bãi biển (Hủy do thời tiết)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Date Group -->
+                    <div>
+                        <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-3">08/06</p>
+                        <div
+                            class="p-3 bg-white border border-outline-variant rounded-2xl shadow-sm hover:border-primary/50 transition-colors cursor-pointer group">
+                            <div class="flex items-center justify-between mb-2">
+                                <span
+                                    class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-700 uppercase">Postponed</span>
+                                <span class="text-xs text-on-surface-variant">10:00</span>
+                            </div>
+                            <h4 class="font-semibold text-sm group-hover:text-primary transition-colors">Họp nhóm tổng
+                                kết</h4>
+                            <p class="text-xs text-on-surface-variant mt-1">The Coffee House, Võ Văn Kiệt</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Mini Map Placeholder -->
+                <div class="mt-lg h-40 rounded-2xl overflow-hidden relative border border-outline-variant shadow-sm">
+                    <div class="absolute inset-0 bg-cover bg-center" data-location="Danang, Vietnam"
+                        style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAKrpQWeYMx1aVj6r6EtVesCQKbxOUTJG6StC0eWy2GnVnxNeG6wsJtX53oVl5IaUSD8CCBDjMnffPhxoChnjHUhZsddmFvkws4lDKRFMFBvB1f8NDFW6PKJxQWPpa9Mp78UkktCItetzk9QsvyCpZLvjcwWNrfPTV1tKYC3wh6ME-ewA0j8vZ4Obt0Ofhm-KgwaqCxGJSIoZRkG90GvjP-6TH64Zjq-1ykf4tyTZpNMMEonWGdpMvV8wOovbYmgL5Kq4veNUkWmKw')">
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                    <div class="absolute bottom-3 left-3 text-white">
+                        <p class="text-[10px] font-bold uppercase opacity-80">Bản đồ lộ trình</p>
+                        <p class="font-semibold text-xs">Điểm đến: Hải sản Năm Đảnh</p>
+                    </div>
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                        <span class="material-symbols-outlined text-primary text-3xl animate-bounce">location_on</span>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+    <!-- Floating Action Button -->
+    <div class="fixed bottom-lg right-lg group z-[70]">
+        <div
+            class="absolute bottom-full right-0 mb-4 px-3 py-2 bg-inverse-surface text-inverse-on-surface text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap">
+            Thêm sự kiện mới
+        </div>
+        <button
+            class="w-14 h-14 bg-primary text-on-primary rounded-2xl shadow-xl hover:scale-110 active:scale-95 transition-all duration-200 flex items-center justify-center">
+            <span class="material-symbols-outlined text-3xl">add</span>
+        </button>
+    </div>
+    <script>
+        // Simple Micro-interaction for Calendar Cells
+        document.querySelectorAll('.calendar-grid > div').forEach(cell => {
+            if (cell.classList.contains('border-r')) {
+                cell.addEventListener('mouseenter', () => {
+                    cell.classList.add('bg-surface-container-low');
+                });
+                cell.addEventListener('mouseleave', () => {
+                    if (!cell.classList.contains('bg-surface-container-low-permanent')) {
+                        cell.classList.remove('bg-surface-container-low');
+                    }
+                });
+            }
+        });
+
+        // Current Date highlighting logic
+        const todayCell = document.querySelector('.calendar-grid div:nth-child(24)');
+        if (todayCell) {
+            todayCell.classList.add('bg-surface-container-low-permanent');
+        }
+    </script>
+</body>
+
+</html>

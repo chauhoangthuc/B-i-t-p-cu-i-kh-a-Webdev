@@ -1,0 +1,28 @@
+import React from 'react';
+// Import shared layout components if applicable (e.g., DashboardLayout, Navbar, Sidebar)
+
+export default function __PAGE_NAME__Page() {
+  return (
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* Header / Navbar Section (Consistently aligned with Home/Dashboard) */}
+      
+      <div className="flex flex-1">
+        {/* Optional Sidebar */}
+        
+        {/* Main Content Container - Locked to Dashboard Grid/Width Standards */}
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Page Header */}
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-slate-900">__PAGE_TITLE__</h1>
+            <p className="text-sm text-slate-500">Manage and view details for __PAGE_NAME__.</p>
+          </div>
+
+          {/* Core Content from Stitch (Refactored into modular components) */}
+          <div className="grid grid-cols-1 gap-6">
+            {/* Insert converted components here */}
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}

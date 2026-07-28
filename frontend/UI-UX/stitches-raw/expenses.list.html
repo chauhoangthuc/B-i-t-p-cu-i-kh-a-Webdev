@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>TripManager - Danh sách chuyến đi</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Material Symbols Outlined -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#bcc7de",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "surface-dim": "#d9dadb",
+                        "background": "#f8f9fa",
+                        "inverse-on-surface": "#f0f1f2",
+                        "tertiary-container": "#2676c8",
+                        "primary-fixed": "#d8e2ff",
+                        "surface-container-high": "#e7e8e9",
+                        "inverse-primary": "#adc6ff",
+                        "on-background": "#191c1d",
+                        "secondary-fixed": "#d8e3fb",
+                        "on-tertiary-fixed": "#001c39",
+                        "on-surface-variant": "#424754",
+                        "surface-variant": "#e1e3e4",
+                        "on-secondary-container": "#586377",
+                        "on-primary-container": "#fefcff",
+                        "on-secondary-fixed-variant": "#3c475a",
+                        "outline": "#727785",
+                        "tertiary-fixed": "#d4e3ff",
+                        "tertiary": "#005da8",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f8f9fa",
+                        "on-secondary-fixed": "#111c2d",
+                        "surface-container": "#edeeef",
+                        "surface-tint": "#005ac2",
+                        "primary-container": "#2170e4",
+                        "tertiary-fixed-dim": "#a4c9ff",
+                        "secondary": "#545f73",
+                        "on-tertiary-container": "#fdfcff",
+                        "error-container": "#ffdad6",
+                        "primary": "#0058be",
+                        "on-error": "#ffffff",
+                        "surface": "#f8f9fa",
+                        "surface-container-low": "#f3f4f5",
+                        "secondary-container": "#d5e0f8",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed-dim": "#adc6ff",
+                        "outline-variant": "#c2c6d6",
+                        "inverse-surface": "#2e3132",
+                        "on-primary-fixed-variant": "#004395",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#004883",
+                        "on-surface": "#191c1d",
+                        "on-primary-fixed": "#001a42"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "base": "4px",
+                        "sidebar-width": "240px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "xs": "4px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", { "lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "label-sm": ["11px", { "lineHeight": "1", "fontWeight": "600" }],
+                        "headline-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .trip-card-hover:hover .trip-image {
+            transform: scale(1.05);
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: #191c1d;
+        }
+
+        .sidebar-transition {
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+
+<body class="font-body-md text-body-md bg-background">
+    <!-- Sidebar -->
+    <aside
+        class="h-screen fixed left-0 top-0 sidebar-transition z-50 border-r border-outline-variant bg-surface group w-[72px] hover:w-sidebar-width flex flex-col py-md overflow-hidden shadow-sm">
+        <div class="px-md mb-xl flex items-center space-x-3 h-10 overflow-hidden">
+            <div class="min-w-[40px] h-10 bg-primary rounded-lg flex items-center justify-center">
+                <span class="material-symbols-outlined text-white"
+                    style="font-variation-settings: 'FILL' 1;">travel_explore</span>
+            </div>
+            <span
+                class="font-headline-md text-headline-md font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">TripManager</span>
+        </div>
+        <nav class="flex-1 flex flex-col gap-sm">
+            <!-- Dashboard -->
+            <a class="flex items-center px-md py-sm mx-2 rounded-xl transition-colors hover:bg-surface-container-high text-on-surface-variant"
+                href="#">
+                <span class="material-symbols-outlined min-w-[24px]">dashboard</span>
+                <span
+                    class="ml-4 font-label-md text-label-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Dashboard</span>
+            </a>
+            <!-- Trips (Active) -->
+            <a class="flex items-center px-md py-sm mx-2 rounded-xl transition-colors text-primary bg-secondary-container border-r-4 border-primary font-bold"
+                href="#">
+                <span class="material-symbols-outlined min-w-[24px]"
+                    style="font-variation-settings: 'FILL' 1;">flight_takeoff</span>
+                <span
+                    class="ml-4 font-label-md text-label-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Trips</span>
+            </a>
+            <!-- Calendar -->
+            <a class="flex items-center px-md py-sm mx-2 rounded-xl transition-colors hover:bg-surface-container-high text-on-surface-variant"
+                href="#">
+                <span class="material-symbols-outlined min-w-[24px]">calendar_today</span>
+                <span
+                    class="ml-4 font-label-md text-label-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Calendar</span>
+            </a>
+            <!-- Expenses -->
+            <a class="flex items-center px-md py-sm mx-2 rounded-xl transition-colors hover:bg-surface-container-high text-on-surface-variant"
+                href="#">
+                <span class="material-symbols-outlined min-w-[24px]">payments</span>
+                <span
+                    class="ml-4 font-label-md text-label-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Expenses</span>
+            </a>
+        </nav>
+        <div class="mt-auto flex flex-col gap-sm">
+            <!-- Profile Section -->
+            <div class="flex items-center px-md py-sm mx-2 relative">
+                <div class="relative min-w-[32px]">
+                    <div class="w-8 h-8 rounded-full overflow-hidden bg-secondary-container">
+                        <img alt="Alex Rivers" class="w-full h-full object-cover"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZE5-Yg_DRnAg-ii1TiQSYKo_8SDGRdZCXgiFNf6p4KbdoV_Zn2tR1jHpLPYyeu7Md-Y4orCI5E2Fiqxj8qennsiKGP0AMFk_WwWYuvDp0jj92lSMxBaL6___euUxSs1om8odXRNoINDMgKl7JoLIKmkxO7RgVdHBDh7M1Vbv9DtVCf0sIRRuXo07GQnC3jVpAB4l1kDbyrXIY2xDd7CKsOm9iQCrtnWkXZ2PGKIEuOTmg7kNm_B5BA-NZhm2oR9KqDX9rKL3xuXY" />
+                    </div>
+                    <div
+                        class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-surface rounded-full">
+                    </div>
+                </div>
+                <div
+                    class="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap overflow-hidden">
+                    <p class="font-label-md text-label-md font-bold text-on-surface">Alex Rivers</p>
+                    <p class="text-[10px] text-on-surface-variant uppercase tracking-wider">Pro Member</p>
+                </div>
+            </div>
+            <a class="flex items-center px-md py-sm mx-2 rounded-xl transition-colors hover:bg-error/10 text-error"
+                href="#">
+                <span class="material-symbols-outlined min-w-[24px]">logout</span>
+                <span
+                    class="ml-4 font-label-md text-label-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Logout</span>
+            </a>
+        </div>
+    </aside>
+    <!-- Header -->
+    <header
+        class="fixed top-0 right-0 left-0 ml-[72px] h-16 bg-surface/80 backdrop-blur-md border-b border-outline-variant z-40 transition-all duration-300">
+        <div class="h-full px-lg flex items-center justify-between">
+            <div class="flex items-center gap-lg">
+                <!-- Trip Switcher -->
+                <div
+                    class="relative group cursor-pointer flex items-center gap-sm px-md py-2 hover:bg-surface-container rounded-lg transition-colors">
+                    <span class="material-symbols-outlined text-primary">location_on</span>
+                    <span class="font-label-md text-label-md font-bold text-on-surface">Đà Nẵng Summer '24</span>
+                    <span class="material-symbols-outlined text-outline text-[20px]">expand_more</span>
+                </div>
+                <!-- Search Bar -->
+                <div
+                    class="hidden lg:flex items-center px-md py-2 bg-surface-container rounded-full border border-outline-variant w-80">
+                    <span class="material-symbols-outlined text-outline text-[20px]">search</span>
+                    <input class="bg-transparent border-none focus:ring-0 text-body-md w-full ml-sm"
+                        placeholder="Tìm kiếm chuyến đi..." type="text" />
+                </div>
+            </div>
+            <div class="flex items-center gap-md">
+                <!-- Language Button -->
+                <button
+                    class="flex items-center gap-xs hover:bg-surface-container px-sm py-1.5 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined text-on-surface-variant">language</span>
+                    <span class="font-label-md text-label-md font-bold">VI</span>
+                </button>
+                <!-- Notifications -->
+                <button
+                    class="relative w-10 h-10 flex items-center justify-center hover:bg-surface-container rounded-full transition-colors text-on-surface-variant">
+                    <span class="material-symbols-outlined">notifications</span>
+                    <span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+                </button>
+                <div class="w-[1px] h-6 bg-outline-variant mx-sm"></div>
+                <!-- User Dropdown -->
+                <div class="relative group">
+                    <button
+                        class="flex items-center gap-sm hover:bg-surface-container px-sm py-1.5 rounded-lg transition-colors">
+                        <div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+                            <img alt="Alex Rivers" class="w-full h-full object-cover"
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZE5-Yg_DRnAg-ii1TiQSYKo_8SDGRdZCXgiFNf6p4KbdoV_Zn2tR1jHpLPYyeu7Md-Y4orCI5E2Fiqxj8qennsiKGP0AMFk_WwWYuvDp0jj92lSMxBaL6___euUxSs1om8odXRNoINDMgKl7JoLIKmkxO7RgVdHBDh7M1Vbv9DtVCf0sIRRuXo07GQnC3jVpAB4l1kDbyrXIY2xDd7CKsOm9iQCrtnWkXZ2PGKIEuOTmg7kNm_B5BA-NZhm2oR9KqDX9rKL3xuXY" />
+                        </div>
+                        <span class="material-symbols-outlined text-outline text-[20px]">expand_more</span>
+                    </button>
+                    <!-- Dropdown Menu (Simplified) -->
+                    <div
+                        class="absolute right-0 top-full mt-1 w-48 bg-surface border border-outline-variant rounded-xl shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all transform origin-top-right scale-95 group-hover:scale-100 overflow-hidden">
+                        <a class="flex items-center px-lg py-sm hover:bg-surface-container-high transition-colors font-label-md text-label-md text-on-surface"
+                            href="#">
+                            <span class="material-symbols-outlined mr-sm text-[20px]">person</span>
+                            Hồ sơ
+                        </a>
+                        <a class="flex items-center px-lg py-sm hover:bg-surface-container-high transition-colors font-label-md text-label-md text-on-surface"
+                            href="#">
+                            <span class="material-symbols-outlined mr-sm text-[20px]">edit</span>
+                            Chỉnh sửa
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Main Content -->
+    <main class="ml-[72px] min-h-screen pt-24 p-lg transition-all duration-300">
+        <div class="max-w-container-max mx-auto">
+            <!-- Page Header -->
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-xl gap-md">
+                <div>
+                    <h1 class="font-headline-lg text-headline-lg text-on-surface mb-xs">Danh sách chuyến đi</h1>
+                    <p class="font-body-md text-body-md text-on-surface-variant">Chào mừng trở lại, Alex. Bạn đang có 2
+                        chuyến đi đang diễn ra.</p>
+                </div>
+                <button
+                    class="inline-flex items-center gap-sm bg-primary text-on-primary px-lg py-md rounded-xl font-label-md text-label-md shadow-lg hover:shadow-primary/30 transition-all active:scale-95">
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'wght' 600;">add</span>
+                    Tạo chuyến đi mới
+                </button>
+            </div>
+            <!-- Filters -->
+            <div class="flex items-center gap-sm overflow-x-auto pb-md mb-lg">
+                <button
+                    class="px-lg py-sm rounded-full bg-primary text-on-primary font-label-md text-label-md transition-all whitespace-nowrap">Tất
+                    cả</button>
+                <button
+                    class="px-lg py-sm rounded-full bg-white border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary font-label-md text-label-md transition-all whitespace-nowrap">Sắp
+                    tới / Đang diễn ra</button>
+                <button
+                    class="px-lg py-sm rounded-full bg-white border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary font-label-md text-label-md transition-all whitespace-nowrap">Đã
+                    hoàn thành</button>
+                <button
+                    class="px-lg py-sm rounded-full bg-white border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary font-label-md text-label-md transition-all whitespace-nowrap">Đã
+                    lên kế hoạch</button>
+            </div>
+            <!-- Trip Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-lg">
+                <!-- Card 1: Ba Na Hills -->
+                <div
+                    class="group trip-card-hover bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-outline-variant flex flex-col md:flex-row">
+                    <div class="relative w-full md:w-2/5 h-48 md:h-auto overflow-hidden">
+                        <div class="trip-image w-full h-full transition-transform duration-700 ease-out bg-cover bg-center"
+                            style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCHLrZQmLZYPhUEuewWYW9r1kJ5tWK0NLuC9MJUXTxhsEsoHwRHFCKRtEwbeudUF7Bv23RwBzUjAtqV7hcgRlM1jt9eeYpL99EknhUoNolnZ_zgB5seLpa4LWzNjCzim4Riz2fGyJ1aZqQV4udH9ZzW53mv44hIitAUwqjzKbezytUbI0dXpmgh4-CvH1e5C5OOFUf6EWHmEsgY9W3QcIXc_DRmy85G2Fs6NXpOjifiRSeOqAtQ_6znvSsBJQE8GRzkZrBQUY4YMKU')">
+                        </div>
+                        <div class="absolute top-md left-md flex flex-col gap-xs">
+                            <span
+                                class="px-sm py-xs rounded-lg bg-primary-container text-on-primary-container text-[10px] font-bold uppercase tracking-tight glass-card">Đang
+                                diễn ra</span>
+                        </div>
+                    </div>
+                    <div class="p-lg flex flex-col justify-between flex-1">
+                        <div>
+                            <div class="flex items-center justify-between mb-sm">
+                                <span
+                                    class="px-sm py-[2px] rounded text-[10px] bg-tertiary-container/10 text-tertiary font-bold">Trưởng
+                                    nhóm</span>
+                                <div class="relative group/more">
+                                    <span
+                                        class="material-symbols-outlined text-outline-variant hover:text-primary cursor-pointer">more_horiz</span>
+                                </div>
+                            </div>
+                            <h3 class="font-headline-sm text-headline-sm text-on-surface mb-xs">Mùa hè Đà Nẵng</h3>
+                            <div class="flex items-center text-on-surface-variant gap-xs mb-md">
+                                <span class="material-symbols-outlined text-[18px]">calendar_month</span>
+                                <span class="font-label-md text-label-md">15/06 - 20/06, 2024</span>
+                                <span class="mx-1">•</span>
+                                <span class="material-symbols-outlined text-[18px]">location_on</span>
+                                <span class="font-label-md text-label-md">Đà Nẵng</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-auto">
+                            <div class="flex -space-x-2">
+                                <div
+                                    class="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-primary-fixed">
+                                    <img alt="user" class="w-full h-full object-cover"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBie7zhJCwdVM_LKheTC-JrHH7r6HGTyNwmkVtgbvy6p0eUnZA8i4d0BEvCKfuyleoo6pNUheoaBiSZY-AK7KDkbCmlAMpBteamQ5YvTbbWxkyfE2h-Ks8bksXoQnkoga_ij_ZywuAfgerwydWQnBqygGEuZ3Z14LCyux3__KOb1ICbVDMRSEdsr39Mxe77RQqBjEi4as_8MBPdB4gHD5rcaFUGt3z5l9IyocILLDOnxyrpCm2zzD4EYCsVwflgd7K6C3dE5hZ-B-4" />
+                                </div>
+                                <div
+                                    class="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-secondary-fixed">
+                                    <img alt="user" class="w-full h-full object-cover"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1AgkTmb1veF_Nrifw9L2lByOrMujNAs201oEwWlYaecc5iEhQpXKg_-T0ODtmH8ozEqg4PBCr0ydYKc6H95fHsDhhVbmqJakZwtJ-_q2u6GcwvmFPw996JfCfrEmD347YZLPOyZ-AOA6VaPGSUBAutZelgAEgoPpwB7AtOlLXxDCuvmFDVCrzNbwKR8xBm5A9PqFkCAxcHP092xU5y2DDpFS0XgKbPvIzvqo1sp9uUUqQDN58nIXRP027bdI6BGykGDesPq3c3rg" />
+                                </div>
+                                <div
+                                    class="w-8 h-8 rounded-full border-2 border-white bg-surface-container-high flex items-center justify-center font-label-sm text-label-sm text-on-surface-variant">
+                                    +3</div>
+                            </div>
+                            <button class="text-primary font-label-md text-label-md hover:underline">Chi tiết</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 2: Sapa -->
+                <div
+                    class="group trip-card-hover bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-outline-variant flex flex-col md:flex-row">
+                    <div class="relative w-full md:w-2/5 h-48 md:h-auto overflow-hidden">
+                        <div class="trip-image w-full h-full transition-transform duration-700 ease-out bg-cover bg-center"
+                            style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDRN96HVlxaNjZTVwAFRK0UW-zbwv28pgTRt8MUxXxsY1W33MO4BsqpvBaTfgNqZkizVKxtQUAJdiyLg0oUuHNX-jbzXaylb77Ifj0ZmkpjfxllVEwPHKbt7icUqpcOgY3XQ9F1V2rtCzKtTsdzVs0yBt1xA7UoD6_k0IsLhwpcdPy_3bz-B6yJ1sy0N7OYlbaeA77zcX2npJ6EWBOIKrb1pTZ3RQmmrWh9jtkfdPzOZd4Q9x_KL_7zYQvy8y8EJWCarRYja6BIOKw')">
+                        </div>
+                        <div class="absolute top-md left-md flex flex-col gap-xs">
+                            <span
+                                class="px-sm py-xs rounded-lg bg-surface-container text-on-surface-variant text-[10px] font-bold uppercase tracking-tight glass-card">Sắp
+                                tới</span>
+                        </div>
+                    </div>
+                    <div class="p-lg flex flex-col justify-between flex-1">
+                        <div>
+                            <div class="flex items-center justify-between mb-sm">
+                                <span
+                                    class="px-sm py-[2px] rounded text-[10px] bg-secondary-container text-on-secondary-container font-bold">Thành
+                                    viên</span>
+                                <span
+                                    class="material-symbols-outlined text-outline-variant hover:text-primary cursor-pointer">more_horiz</span>
+                            </div>
+                            <h3 class="font-headline-sm text-headline-sm text-on-surface mb-xs">Sapa Trekking</h3>
+                            <div class="flex items-center text-on-surface-variant gap-xs mb-md">
+                                <span class="material-symbols-outlined text-[18px]">calendar_month</span>
+                                <span class="font-label-md text-label-md">10/11 - 14/11, 2024</span>
+                                <span class="mx-1">•</span>
+                                <span class="material-symbols-outlined text-[18px]">location_on</span>
+                                <span class="font-label-md text-label-md">Lào Cai</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-auto">
+                            <div class="flex -space-x-2">
+                                <div
+                                    class="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-primary-fixed">
+                                    <img alt="user" class="w-full h-full object-cover"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3Xg4ANc1BslHIc1n1Eulf-fKEzqcotuIdUC_pFjw1Sr3Au2vBeDF4alatWOhJl_tJ0yiZaH_9g77tO8Dx5vIlNzEQDhyUVUVlmbY6QOI3MBBheadvFplzwcrPdEefNN1w7fVoATIg2WmGlUUPmbDwd5sWXLpFhTMAftG64_pM7UlqE_YhsBuV_uX8j2x75wYtsDIt3SPzkl5sQx6Tup7FtqWWXGQdKJH2AQ6O-xiu525t9iBehWA6N-x6jiZWn3SNfvc-_jxWXOM" />
+                                </div>
+                                <div
+                                    class="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-secondary-fixed">
+                                    <img alt="user" class="w-full h-full object-cover"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5i4tXmVmbvbPmpHGUTbvkK6R8sHR10lGhRy_eKHjnw5IGVCNgP2XkioJFedCGyQeiWXYe08X_b_bmfAQzMzKPzZV9HYEs_Ik9JksxC1rE0uNUwVgc9JonXJfS9ldROdhxDfhDYG3JTlzHPOxFhJwBQjjsqesCcLIHw1UcvFLVDHqp3Q6PF4ksOv4LtGEnHfy4nvwDbU0WGXcqti7QLRklvWBYT0zi4U50tJsiaL5epXWGsxadXu6DLIsEr679efMZPigoMkrh-Vc" />
+                                </div>
+                            </div>
+                            <button class="text-primary font-label-md text-label-md hover:underline">Chi tiết</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 3: Nha Trang -->
+                <div
+                    class="group trip-card-hover bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-outline-variant flex flex-col md:flex-row">
+                    <div class="relative w-full md:w-2/5 h-48 md:h-auto overflow-hidden">
+                        <div class="trip-image w-full h-full transition-transform duration-700 ease-out bg-cover bg-center"
+                            style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBMg8d6Tb_55sY2Pp7QbOpepCHzu41TNC6ZQKmubijxv-h10y41ZP4xcwdpOgIgfVUfTFPnsErg7_IOIRUBJkLefrAFH99RF9dhRzeahFxqa37XUtiqSNF-BxshFiRefI7qiX9jUlAKnoY3dSAe6uhPTxIpP33jni7zQQfaAEiT4uPf4ImRE9I6d_LN9H23v3KGwu7_ZP56MHWHvByx3fAyn0HwhfEBjJ4yRy1a6MKQlBySY3yTiRcjCqOdtagjIyDtlyX9VUFnM2E')">
+                        </div>
+                        <div class="absolute top-md left-md flex flex-col gap-xs">
+                            <span
+                                class="px-sm py-xs rounded-lg bg-surface-variant text-on-surface-variant text-[10px] font-bold uppercase tracking-tight glass-card">Đã
+                                hoàn thành</span>
+                        </div>
+                    </div>
+                    <div class="p-lg flex flex-col justify-between flex-1">
+                        <div>
+                            <div class="flex items-center justify-between mb-sm">
+                                <span
+                                    class="px-sm py-[2px] rounded text-[10px] bg-tertiary-container/10 text-tertiary font-bold">Trưởng
+                                    nhóm</span>
+                                <span
+                                    class="material-symbols-outlined text-outline-variant hover:text-primary cursor-pointer">more_horiz</span>
+                            </div>
+                            <h3 class="font-headline-sm text-headline-sm text-on-surface mb-xs">Nghỉ dưỡng Nha Trang
+                            </h3>
+                            <div class="flex items-center text-on-surface-variant gap-xs mb-md">
+                                <span class="material-symbols-outlined text-[18px]">calendar_month</span>
+                                <span class="font-label-md text-label-md">01/03 - 05/03, 2024</span>
+                                <span class="mx-1">•</span>
+                                <span class="material-symbols-outlined text-[18px]">location_on</span>
+                                <span class="font-label-md text-label-md">Nha Trang</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-auto">
+                            <div class="flex -space-x-2">
+                                <div
+                                    class="w-8 h-8 rounded-full border-2 border-white bg-primary-fixed flex items-center justify-center font-label-sm text-label-sm">
+                                    +8</div>
+                            </div>
+                            <button class="text-primary font-label-md text-label-md hover:underline">Xem lại</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 4: Phu Quoc -->
+                <div
+                    class="group trip-card-hover bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-outline-variant flex flex-col md:flex-row">
+                    <div class="relative w-full md:w-2/5 h-48 md:h-auto overflow-hidden">
+                        <div class="trip-image w-full h-full transition-transform duration-700 ease-out bg-cover bg-center"
+                            style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAE0P_Wyu0Zt6aD8I_41gGXBTiZY2txyM4lwmhkA0B1VXTv8l3SXv-FsglPVC-bawKeiK0kfHxoOozaZzVY9CPqJkWRh3LhSlaRmXOhWGViMv0DQrX-PWkq5rul_8AplrDnNylutYu8sBpdh7XvifFPQXIpljtOjJjh09IlL29vrf0qk6A8wBKVzDGx6moXpeZGVBfddTkMcygA2WCa0A5Z35lcxajQhV-EId6jVbgF6is_5XGDu-0fXpkQyEn49LzYLY1CxDNB5rs')">
+                        </div>
+                        <div class="absolute top-md left-md flex flex-col gap-xs">
+                            <span
+                                class="px-sm py-xs rounded-lg bg-surface-container-highest text-on-surface-variant text-[10px] font-bold uppercase tracking-tight glass-card">Đã
+                                lên kế hoạch</span>
+                        </div>
+                    </div>
+                    <div class="p-lg flex flex-col justify-between flex-1">
+                        <div>
+                            <div class="flex items-center justify-between mb-sm">
+                                <span
+                                    class="px-sm py-[2px] rounded text-[10px] bg-secondary-container text-on-secondary-container font-bold">Thành
+                                    viên</span>
+                                <span
+                                    class="material-symbols-outlined text-outline-variant hover:text-primary cursor-pointer">more_horiz</span>
+                            </div>
+                            <h3 class="font-headline-sm text-headline-sm text-on-surface mb-xs">Tết Phú Quốc 2025</h3>
+                            <div class="flex items-center text-on-surface-variant gap-xs mb-md">
+                                <span class="material-symbols-outlined text-[18px]">calendar_month</span>
+                                <span class="font-label-md text-label-md">28/01 - 02/02, 2025</span>
+                                <span class="mx-1">•</span>
+                                <span class="material-symbols-outlined text-[18px]">location_on</span>
+                                <span class="font-label-md text-label-md">Phú Quốc</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-auto">
+                            <div class="flex -space-x-2">
+                                <div
+                                    class="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-primary-fixed">
+                                    <img alt="user" class="w-full h-full object-cover"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgpzRqQj0qvBud0B2LPN25P7Nsr55_DiZ2IkpDOyTfXuQFdQSU5tgHHRF6v8pa3kvQF-xzcUaKGm9iNMNZsvTPYAE-A7WzGpbGB44FhTLK8rdQUshGUyMkXdFHnpwhmMDPUudPhtW88twl49K3n7tKFRSd4Rf6H4Gez_dZbOG3ShnpOGPObFc0pVSCzMoKnmDeyXqIdk36sydAX06wmu5Ag0iU814UYfU7rfzixfygArgo1D6_55aPcDvdDriX6AhPWtZp0VGbcfY" />
+                                </div>
+                                <div
+                                    class="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-secondary-fixed">
+                                    <img alt="user" class="w-full h-full object-cover"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBv5ag95TABlZ2xEnrGmrWqqzoaUqK6gSMr2rw8qF3BBl1NkhIaHuhCuSTWBBuXqmM1_NE4_tbc31MIurYvdf7p-wUmGpb23maR5nbTFc7b8gUw_XbquyanxWW4m_39K_g7BQ6gVUQ8DYLGPbpeU_1BMiCklkPxteoHwwFmpJaGzdhaR3QF-XO_-PJlW3qUoxXliOXirJGVSOXuQf18pChsIK3LKdyZGweADlirik6OTP3Cu6i_6hgZBqhhsBFJhsiC0lmQHNMM82I" />
+                                </div>
+                            </div>
+                            <button class="text-primary font-label-md text-label-md hover:underline">Chỉnh sửa</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- Floating Action Button -->
+    <div class="fixed bottom-lg right-lg group z-50">
+        <div
+            class="absolute bottom-full right-0 mb-4 opacity-0 group-hover:opacity-100 transition-opacity bg-inverse-surface text-inverse-on-surface px-md py-xs rounded text-label-md pointer-events-none whitespace-nowrap">
+            Tạo chuyến đi mới
+        </div>
+        <button
+            class="w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
+            <span class="material-symbols-outlined text-[32px]" style="font-variation-settings: 'wght' 500;">add</span>
+        </button>
+    </div>
+    <script>
+        // Simple filter active state toggle
+        const filterButtons = document.querySelectorAll('.flex.items-center.gap-sm button');
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterButtons.forEach(b => {
+                    b.classList.remove('bg-primary', 'text-on-primary');
+                    b.classList.add('bg-white', 'text-on-surface-variant', 'border', 'border-outline-variant');
+                });
+                btn.classList.add('bg-primary', 'text-on-primary');
+                btn.classList.remove('bg-white', 'text-on-surface-variant', 'border', 'border-outline-variant');
+            });
+        });
+
+        // Add subtle scroll effect to header
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 10) {
+                header.classList.add('shadow-sm');
+            } else {
+                header.classList.remove('shadow-sm');
+            }
+        });
+    </script>
+</body>
+
+</html>

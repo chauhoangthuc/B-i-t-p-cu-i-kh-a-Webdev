@@ -1,0 +1,13 @@
+import React from 'react';
+
+export interface __COMPONENT_NAME__Props {
+  // Define props here
+}
+
+export function __COMPONENT_NAME__({}: __COMPONENT_NAME__Props) {
+  return (
+    <div className="w-full">
+      {/* Component JSX goes here */}
+    </div>
+  );
+}

@@ -1,0 +1,55 @@
+# Dependency directories
+node_modules/
+jspm_packages/
+web_stage/
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+.cache/
+
+# Docker volumes and local data
+postgres_data/
+minio_data/
+pgdata/
+
+# Environment files (Sensitive Info)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+backend/.env
+frontend/.env
+jobs-service/.env
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and databases
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.db
+*.sqlite
+
+# IDEs and editors
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.agents/
+.gemini/
+
+# Docker credentials & compose files
+docker-compose.yml

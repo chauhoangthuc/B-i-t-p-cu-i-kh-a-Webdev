@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html class="light" lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Hồ sơ của bạn - TripManager</title>
+    <!-- Google Fonts: Inter for the systematic look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <!-- Material Symbols for icons -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-primary-container": "#fefcff",
+                        "on-surface": "#191c1d",
+                        "on-tertiary-container": "#fdfcff",
+                        "outline-variant": "#c2c6d6",
+                        "on-tertiary-fixed": "#001c39",
+                        "secondary-fixed": "#d8e3fb",
+                        "inverse-surface": "#2e3132",
+                        "background": "#f8f9fa",
+                        "tertiary-container": "#2676c8",
+                        "on-background": "#191c1d",
+                        "secondary": "#545f73",
+                        "on-error-container": "#93000a",
+                        "primary-fixed": "#d8e2ff",
+                        "on-secondary": "#ffffff",
+                        "surface-bright": "#f8f9fa",
+                        "inverse-on-surface": "#f0f1f2",
+                        "surface": "#f8f9fa",
+                        "secondary-fixed-dim": "#bcc7de",
+                        "primary-container": "#2170e4",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#001a42",
+                        "inverse-primary": "#adc6ff",
+                        "tertiary": "#005da8",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#004883",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e1e3e4",
+                        "surface-container-high": "#e7e8e9",
+                        "secondary-container": "#d5e0f8",
+                        "on-secondary-fixed-variant": "#3c475a",
+                        "tertiary-fixed-dim": "#a4c9ff",
+                        "on-secondary-fixed": "#111c2d",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-surface-variant": "#424754",
+                        "surface-tint": "#005ac2",
+                        "outline": "#727785",
+                        "primary": "#0058be",
+                        "surface-container": "#edeeef",
+                        "surface-container-low": "#f3f4f5",
+                        "on-primary-fixed-variant": "#004395",
+                        "on-secondary-container": "#586377",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed": "#d4e3ff",
+                        "surface-dim": "#d9dadb",
+                        "surface-container-lowest": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "sidebar-width": "240px",
+                        "xl": "32px",
+                        "base": "4px",
+                        "xs": "4px",
+                        "container-max": "1280px",
+                        "gutter": "24px",
+                        "md": "16px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-md": ["12px", { "lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "label-sm": ["11px", { "lineHeight": "1", "fontWeight": "600" }],
+                        "headline-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+        }
+
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .bento-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+
+<body class="bg-background text-on-background min-h-screen">
+    <!-- TopAppBar -->
+    <header class="fixed top-0 w-full z-50 bg-surface-container-lowest shadow-sm border-b border-outline-variant">
+        <div class="flex items-center justify-between px-lg py-sm max-w-container-max mx-auto">
+            <div class="flex items-center gap-sm">
+                <span class="material-symbols-outlined text-primary text-2xl"
+                    data-icon="travel_explore">travel_explore</span>
+                <span class="font-display-lg text-headline-md tracking-tight text-primary">TripManager</span>
+            </div>
+            <nav class="hidden md:flex items-center gap-lg">
+                <a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors"
+                    href="#">Trang chủ</a>
+                <a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors"
+                    href="#">Dịch vụ</a>
+                <a class="font-label-md text-label-md text-primary border-b-2 border-primary" href="#">Hồ sơ</a>
+            </nav>
+            <button
+                class="flex items-center gap-xs px-md py-xs bg-surface-container-high rounded-full hover:bg-surface-container-highest transition-all duration-200">
+                <span class="material-symbols-outlined text-on-surface-variant" data-icon="logout">logout</span>
+                <span class="font-label-md text-label-md text-on-surface-variant">Logout</span>
+            </button>
+        </div>
+    </header>
+    <main class="pt-24 pb-16 px-lg max-w-container-max mx-auto">
+        <!-- Page Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-xl gap-md">
+            <div>
+                <h1 class="font-headline-lg text-headline-lg text-on-surface">Hồ sơ của bạn</h1>
+                <p class="font-body-md text-body-md text-on-surface-variant mt-xs">Quản lý thông tin cá nhân và thiết
+                    lập tài khoản TripManager của bạn.</p>
+            </div>
+            <button
+                class="flex items-center gap-sm px-lg py-sm bg-primary text-on-primary rounded-lg hover:brightness-105 active:scale-95 transition-all shadow-sm">
+                <span class="material-symbols-outlined" data-icon="edit">edit</span>
+                <span class="font-label-md text-label-md">Chỉnh sửa hồ sơ</span>
+            </button>
+        </div>
+        <!-- Bento Grid Layout -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-lg">
+            <!-- Card 1: Profile Identity (Glassmorphism) -->
+            <div
+                class="md:col-span-4 glass-card p-xl rounded-xl flex flex-col items-center text-center shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-primary"></div>
+                <div class="relative mb-md">
+                    <img class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md"
+                        data-alt="A professional close-up studio portrait of a friendly Southeast Asian man in his 30s, wearing a crisp white button-down shirt. The lighting is soft and cinematic with a clean, light gray background, following a modern high-definition minimalist aesthetic. He has a warm, confident expression. A small blue verified checkmark badge is subtly integrated in the bottom right corner of his profile photo circle."
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2zmfbKWSlAcx_td_hJZl8iNmhAs7y8FKAxuOPLG26KSrSMiFXoW6nkH1F6IWO8drFb2N8kFab4dRbGiI_yET8eDyjAQlivRwXv9IKH1WUJfubQ7MUXFeXay9EpEmy4Ua5QkJLt6E4ohCqDOki7FdVjxrnS7DnwqZuWh6z3sQWp3LcLB2fqKu-TN3kAbJ_-xwGtvrNk3ocbDHd9jou2xDNjOohii6VD9eLzxYvIrDyqOy462jmc0dKWaiWEW8UpmH5ZaH8v-JE9-I">
+                    <div
+                        class="absolute bottom-1 right-1 bg-primary text-white p-1 rounded-full border-2 border-white flex items-center justify-center">
+                        <span class="material-symbols-outlined text-[14px]" data-icon="verified"
+                            style="font-variation-settings: 'FILL' 1;">verified</span>
+                    </div>
+                </div>
+                <h2 class="font-headline-sm text-headline-sm text-on-surface">Nguyễn Minh Quân</h2>
+                <p class="font-body-md text-body-md text-on-surface-variant">quan.nguyen@tripmanager.com</p>
+                <div
+                    class="mt-md px-md py-1 bg-primary-fixed text-on-primary-fixed-variant rounded-full font-label-sm text-label-sm uppercase tracking-wider">
+                    Verified Professional
+                </div>
+                <div class="mt-xl w-full grid grid-cols-2 gap-sm">
+                    <div class="bg-surface-container-low p-sm rounded-lg">
+                        <p class="text-primary font-headline-sm">24</p>
+                        <p class="font-label-sm text-on-surface-variant">Chuyến đi</p>
+                    </div>
+                    <div class="bg-surface-container-low p-sm rounded-lg">
+                        <p class="text-primary font-headline-sm">4.9</p>
+                        <p class="font-label-sm text-on-surface-variant">Đánh giá</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Card 2: Personal Info -->
+            <div
+                class="md:col-span-8 bg-surface-container-lowest border border-outline-variant p-xl rounded-xl shadow-sm">
+                <div class="flex items-center gap-sm mb-lg">
+                    <span class="material-symbols-outlined text-primary"
+                        data-icon="person_outline">person_outline</span>
+                    <h3 class="font-headline-sm text-headline-sm text-on-surface">Thông tin cá nhân</h3>
+                </div>
+                <div class="space-y-lg">
+                    <div
+                        class="flex flex-col md:flex-row md:items-center justify-between pb-md border-b border-surface-variant">
+                        <span class="font-label-md text-label-md text-on-surface-variant">Họ và tên</span>
+                        <span class="font-body-md text-body-md text-on-surface">Nguyễn Minh Quân</span>
+                    </div>
+                    <div
+                        class="flex flex-col md:flex-row md:items-center justify-between pb-md border-b border-surface-variant">
+                        <span class="font-label-md text-label-md text-on-surface-variant">Số điện thoại</span>
+                        <span class="font-body-md text-body-md text-on-surface">+84 901 234 567</span>
+                    </div>
+                    <div
+                        class="flex flex-col md:flex-row md:items-center justify-between pb-md border-b border-surface-variant">
+                        <span class="font-label-md text-label-md text-on-surface-variant">Địa chỉ</span>
+                        <span class="font-body-md text-body-md text-on-surface text-right">Toà nhà Bitexco, Quận 1, TP.
+                            Hồ Chí Minh</span>
+                    </div>
+                    <div class="flex flex-col md:flex-row md:items-center justify-between">
+                        <span class="font-label-md text-label-md text-on-surface-variant">Ngày sinh</span>
+                        <span class="font-body-md text-body-md text-on-surface">15 tháng 06, 1990</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Card 3: Account Settings -->
+            <div
+                class="md:col-span-6 bg-surface-container-lowest border border-outline-variant p-xl rounded-xl shadow-sm flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center gap-sm mb-lg">
+                        <span class="material-symbols-outlined text-primary" data-icon="settings">settings</span>
+                        <h3 class="font-headline-sm text-headline-sm text-on-surface">Thiết lập tài khoản</h3>
+                    </div>
+                    <div class="space-y-lg">
+                        <button class="w-full flex items-center justify-between group"
+                            onclick="openModal('password-modal')">
+                            <div class="flex flex-col items-start">
+                                <span class="font-label-md text-label-md text-on-surface">Đổi mật khẩu</span>
+                                <span class="font-label-sm text-on-surface-variant">Cập nhật mật khẩu định kỳ để bảo
+                                    mật</span>
+                            </div>
+                            <span
+                                class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform"
+                                data-icon="chevron_right">chevron_right</span>
+                        </button>
+                        <div class="flex items-center justify-between">
+                            <div class="flex flex-col items-start">
+                                <span class="font-label-md text-label-md text-on-surface">Thông báo email</span>
+                                <span class="font-label-sm text-on-surface-variant">Nhận cập nhật về hành trình qua
+                                    email</span>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input checked="" class="sr-only peer" type="checkbox">
+                                <div
+                                    class="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
+                                </div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex flex-col items-start">
+                                <span class="font-label-md text-label-md text-on-surface">Ngôn ngữ</span>
+                            </div>
+                            <select
+                                class="bg-surface-container border-none rounded-lg text-label-md font-label-md text-on-surface py-1 pr-8 focus:ring-2 focus:ring-primary">
+                                <option>Tiếng Việt</option>
+                                <option>English</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Card 4: Recent Activity -->
+            <div
+                class="md:col-span-6 bg-surface-container-lowest border border-outline-variant p-xl rounded-xl shadow-sm">
+                <div class="flex items-center justify-between mb-lg">
+                    <div class="flex items-center gap-sm">
+                        <span class="material-symbols-outlined text-primary" data-icon="history">history</span>
+                        <h3 class="font-headline-sm text-headline-sm text-on-surface">Hoạt động gần đây</h3>
+                    </div>
+                    <button class="text-primary font-label-md text-label-md hover:underline"
+                        onclick="openModal('history-modal')">Xem tất cả</button>
+                </div>
+                <div class="space-y-md">
+                    <div class="flex items-start gap-md">
+                        <div class="w-2 h-2 rounded-full bg-primary mt-2 shrink-0"></div>
+                        <div class="flex flex-col">
+                            <span class="font-body-md text-body-md text-on-surface">Đã đặt chuyến đi: TP. HCM - Đà
+                                Lạt</span>
+                            <span class="font-label-sm text-on-surface-variant">2 giờ trước</span>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-md">
+                        <div class="w-2 h-2 rounded-full bg-tertiary mt-2 shrink-0"></div>
+                        <div class="flex flex-col">
+                            <span class="font-body-md text-body-md text-on-surface">Hoàn thành thanh toán hóa đơn
+                                #TM9982</span>
+                            <span class="font-label-sm text-on-surface-variant">Hôm qua, 14:20</span>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-md">
+                        <div class="w-2 h-2 rounded-full bg-surface-variant mt-2 shrink-0"></div>
+                        <div class="flex flex-col">
+                            <span class="font-body-md text-body-md text-on-surface">Cập nhật ảnh đại diện mới</span>
+                            <span class="font-label-sm text-on-surface-variant">3 ngày trước</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- Footer Component -->
+    <footer class="w-full py-xl bg-surface-container-low border-t border-outline-variant">
+        <div class="flex flex-col md:flex-row items-center justify-between px-lg max-w-container-max mx-auto gap-md">
+            <div class="flex flex-col gap-xs items-center md:items-start">
+                <span class="font-label-md text-label-md font-bold text-secondary">TripManager</span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant">© 2024 TripManager. All rights
+                    reserved.</span>
+            </div>
+            <div class="flex gap-lg">
+                <a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-opacity duration-200"
+                    href="#">Chính sách</a>
+                <a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-opacity duration-200"
+                    href="#">Điều khoản</a>
+                <a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-opacity duration-200"
+                    href="#">Liên hệ</a>
+            </div>
+        </div>
+    </footer>
+    <!-- Modals -->
+    <!-- Password Modal -->
+    <div class="fixed inset-0 z-[60] hidden" id="password-modal">
+        <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" onclick="closeModal('password-modal')"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md p-xl">
+            <div class="bg-white rounded-xl shadow-2xl p-xl">
+                <div class="flex justify-between items-center mb-lg">
+                    <h3 class="font-headline-sm text-headline-sm">Đổi mật khẩu</h3>
+                    <button class="material-symbols-outlined text-on-surface-variant" data-icon="close"
+                        onclick="closeModal('password-modal')">close</button>
+                </div>
+                <div class="space-y-md">
+                    <div>
+                        <label class="block font-label-md mb-xs">Mật khẩu hiện tại</label>
+                        <input
+                            class="w-full bg-surface-container border border-outline-variant rounded-lg p-sm focus:ring-2 focus:ring-primary outline-none"
+                            type="password">
+                    </div>
+                    <div>
+                        <label class="block font-label-md mb-xs">Mật khẩu mới</label>
+                        <input
+                            class="w-full bg-surface-container border border-outline-variant rounded-lg p-sm focus:ring-2 focus:ring-primary outline-none"
+                            type="password">
+                    </div>
+                    <div>
+                        <label class="block font-label-md mb-xs">Xác nhận mật khẩu</label>
+                        <input
+                            class="w-full bg-surface-container border border-outline-variant rounded-lg p-sm focus:ring-2 focus:ring-primary outline-none"
+                            type="password">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-sm mt-xl">
+                    <button
+                        class="px-lg py-sm font-label-md text-on-surface-variant hover:bg-surface-variant rounded-lg transition-colors"
+                        onclick="closeModal('password-modal')">Hủy bỏ</button>
+                    <button
+                        class="px-lg py-sm bg-primary text-on-primary font-label-md rounded-lg shadow-sm hover:brightness-110">Cập
+                        nhật</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Activity History Modal -->
+    <div class="fixed inset-0 z-[60] hidden" id="history-modal">
+        <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" onclick="closeModal('history-modal')"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl p-xl">
+            <div class="bg-white rounded-xl shadow-2xl p-xl max-h-[707px] overflow-y-auto">
+                <div class="flex justify-between items-center mb-lg">
+                    <h3 class="font-headline-sm text-headline-sm">Toàn bộ lịch sử hoạt động</h3>
+                    <button class="material-symbols-outlined text-on-surface-variant" data-icon="close"
+                        onclick="closeModal('history-modal')">close</button>
+                </div>
+                <div class="space-y-xl">
+                    <!-- Iterative log items -->
+                    <div class="pb-md border-b border-surface-variant">
+                        <p class="font-label-sm text-primary uppercase mb-xs">Hôm nay</p>
+                        <div class="flex justify-between items-center py-xs">
+                            <span class="font-body-md text-on-surface">Đăng nhập từ trình duyệt Chrome (macOS)</span>
+                            <span class="font-label-sm text-on-surface-variant">08:45</span>
+                        </div>
+                    </div>
+                    <div class="pb-md border-b border-surface-variant">
+                        <p class="font-label-sm text-primary uppercase mb-xs">Hôm qua</p>
+                        <div class="space-y-sm">
+                            <div class="flex justify-between items-center">
+                                <span class="font-body-md text-on-surface">Yêu cầu hoàn tiền chuyến đi #TM1002</span>
+                                <span class="font-label-sm text-on-surface-variant">16:12</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="font-body-md text-on-surface">Thêm thẻ tín dụng mới (**** 1234)</span>
+                                <span class="font-label-sm text-on-surface-variant">10:30</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pb-md border-b border-surface-variant">
+                        <p class="font-label-sm text-primary uppercase mb-xs">10 Tháng 12, 2023</p>
+                        <div class="flex justify-between items-center">
+                            <span class="font-body-md text-on-surface">Đã gửi tin nhắn cho hỗ trợ kỹ thuật</span>
+                            <span class="font-label-sm text-on-surface-variant">09:15</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Simple scale interaction for cards
+        document.querySelectorAll('.bg-surface-container-lowest').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.classList.add('transition-transform', 'duration-300');
+                card.style.boxShadow = '0px 10px 30px rgba(0, 0, 0, 0.05)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.boxShadow = 'none';
+            });
+        });
+    </script>
+</body>
+
+</html>

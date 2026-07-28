@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html class="light" lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Chỉnh sửa hồ sơ - TripManager</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface": "#191c1d",
+                        "on-background": "#191c1d",
+                        "secondary-fixed-dim": "#bcc7de",
+                        "on-error-container": "#93000a",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#0058be",
+                        "on-tertiary-fixed-variant": "#004883",
+                        "on-secondary-fixed": "#111c2d",
+                        "tertiary-container": "#2676c8",
+                        "surface-dim": "#d9dadb",
+                        "surface-bright": "#f8f9fa",
+                        "on-secondary-fixed-variant": "#3c475a",
+                        "on-surface-variant": "#424754",
+                        "surface-container": "#edeeef",
+                        "outline": "#727785",
+                        "surface-variant": "#e1e3e4",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-container": "#586377",
+                        "tertiary-fixed": "#d4e3ff",
+                        "error": "#ba1a1a",
+                        "on-tertiary-container": "#fdfcff",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed": "#001a42",
+                        "surface-container-high": "#e7e8e9",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed": "#001c39",
+                        "inverse-primary": "#adc6ff",
+                        "secondary": "#545f73",
+                        "inverse-surface": "#2e3132",
+                        "secondary-fixed": "#d8e3fb",
+                        "background": "#f8f9fa",
+                        "outline-variant": "#c2c6d6",
+                        "inverse-on-surface": "#f0f1f2",
+                        "primary-container": "#2170e4",
+                        "tertiary-fixed-dim": "#a4c9ff",
+                        "on-primary-container": "#fefcff",
+                        "tertiary": "#005da8",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-primary-fixed-variant": "#004395",
+                        "surface-tint": "#005ac2",
+                        "secondary-container": "#d5e0f8",
+                        "primary-fixed": "#d8e2ff",
+                        "on-error": "#ffffff",
+                        "surface-container-low": "#f3f4f5",
+                        "surface": "#f8f9fa",
+                        "primary-fixed-dim": "#adc6ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "xs": "4px",
+                        "gutter": "24px",
+                        "sidebar-width": "240px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "base": "4px",
+                        "container-max": "1280px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9ff;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
+        }
+
+        .bento-item {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .bento-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .active-tab {
+            color: #0058be;
+            font-weight: 600;
+        }
+
+        .form-input {
+            transition: all 0.2s ease;
+            background: #f8f9fa;
+        }
+
+        .form-input:focus {
+            background: #ffffff;
+            box-shadow: 0 0 0 2px #0058be;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+
+<body class="bg-background text-on-surface antialiased">
+    <!-- TopAppBar -->
+    <nav
+        class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-outline-variant/30 shadow-sm h-16">
+        <div class="flex justify-between items-center px-gutter py-md w-full max-w-container-max mx-auto h-full">
+            <div class="flex items-center gap-2 cursor-pointer">
+                <span class="material-symbols-outlined text-primary text-3xl">travel_explore</span>
+                <span class="font-headline-md text-headline-md font-bold text-primary tracking-tight">TripManager</span>
+            </div>
+            <div class="hidden md:flex items-center gap-8">
+                <a class="text-on-surface-variant hover:bg-surface-container-high px-3 py-2 rounded-lg transition-colors font-label-md text-label-md"
+                    href="#">Bảng điều khiển</a>
+                <a class="text-on-surface-variant hover:bg-surface-container-high px-3 py-2 rounded-lg transition-colors font-label-md text-label-md"
+                    href="#">Chuyến đi</a>
+                <a class="text-on-surface-variant hover:bg-surface-container-high px-3 py-2 rounded-lg transition-colors font-label-md text-label-md"
+                    href="#">Thành viên</a>
+                <a class="text-primary font-bold px-3 py-2 rounded-lg transition-colors font-label-md text-label-md"
+                    href="#">Hồ sơ</a>
+            </div>
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 rounded-full border border-outline-variant overflow-hidden cursor-pointer active:scale-95 duration-200">
+                    <img class="w-full h-full object-cover"
+                        data-alt="A professional close-up studio portrait of a confident young travel consultant with a friendly smile, wearing a modern blue blazer, set against a minimalist light grey architectural background with soft morning sunlight casting elegant shadows."
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIJtptLWdNNSsAMVmlPZgQxaWb5TcLDbRs4DNJtN5mF2bH0wtr7po1Kks1mlAqjNTMZFx82ghsFP7vvBMV_QQVgAkmkcPehdQQ0duZOq4YchkRirEjNHEfFL5skgJCwLbWTV3e1r5Cupa-TihYvJS8r8FsGl0xnNlmzX2-X878UIwC-ABl0Z2xdgv2MZ_QH2xxIVTtGquBvLn6c_Ro-rVoMmbvNzKQEaJ-9qmGdomSVsGENnP_-SiAvQt6FEPUYrhnZfi5jTHQITI">
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- Main Content Area -->
+    <main class="mt-24 mb-16 max-w-container-max mx-auto px-gutter">
+        <!-- Page Header -->
+        <div class="mb-10">
+            <button
+                class="flex items-center gap-2 text-primary font-semibold hover:gap-3 transition-all duration-300 mb-4 group">
+                <span class="material-symbols-outlined text-sm">arrow_back</span>
+                <span class="font-label-md text-label-md">Quay lại Hồ sơ</span>
+            </button>
+            <div class="flex flex-col gap-1">
+                <h1 class="font-headline-lg text-headline-lg text-on-surface">Chỉnh sửa hồ sơ</h1>
+                <p class="font-body-md text-body-md text-on-surface-variant">Cập nhật thông tin cá nhân và hình đại diện
+                    của bạn</p>
+            </div>
+        </div>
+        <!-- Bento Layout -->
+        <div class="bento-grid">
+            <!-- Block 1: Avatar Management -->
+            <div
+                class="col-span-12 md:col-span-4 glass-card p-xl rounded-xl flex flex-col items-center text-center bento-item">
+                <div class="relative group cursor-pointer mb-6">
+                    <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg">
+                        <img class="w-full h-full object-cover"
+                            data-alt="High-detail close-up of a modern, stylish person's face, blurred travel background with iconic architecture like the Eiffel Tower or Tokyo Skytree, shot in soft natural lighting with a clean professional finish for a travel app user profile."
+                            id="profileImage"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCT-84j4my2th6zT_eSzSyy5K_Cj3Y0PIkU38-5hbnVkqJiHMAjePZCmnuWPFRacMkU2VXGCWAmKJBQEyJHKAwD-2VroiBYYltttWjMIhZjrj-3NDIfEu0XaIjudS_cqlHZyBNNQ6fFPxuXlDXEOg0XosH8OXeJbXrLkirH04cQC8s7wiXXEc9Vjqae59k_U316LOrxbz-yFOYxK76kNoVlf9b3FJ9S14Vi4ApT2rLb4SbYJDp2Qz-Il08mr3FilvU7a9y3cnSWDGw">
+                    </div>
+                    <div class="absolute inset-0 bg-on-surface/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300"
+                        onclick="openAvatarModal()">
+                        <span class="material-symbols-outlined text-white text-3xl">photo_camera</span>
+                    </div>
+                </div>
+                <h3 class="font-headline-sm text-headline-sm mb-2">Ảnh đại diện</h3>
+                <p class="font-label-md text-label-md text-on-surface-variant mb-6">Định dạng JPG, PNG hoặc GIF. Tối đa
+                    2MB.</p>
+                <button
+                    class="w-full py-3 px-6 bg-white border border-outline-variant hover:border-primary text-on-surface font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+                    onclick="openAvatarModal()">
+                    <span class="material-symbols-outlined text-md">upload</span>
+                    Tải lên ảnh mới
+                </button>
+            </div>
+            <!-- Block 2: Profile Form -->
+            <div class="col-span-12 md:col-span-8 glass-card p-xl rounded-xl bento-item">
+                <h3 class="font-headline-sm text-headline-sm mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">person</span>
+                    Thông tin cá nhân
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="flex flex-col gap-2">
+                        <label class="font-label-md text-label-md text-on-surface-variant">Họ và tên</label>
+                        <input
+                            class="form-input border border-outline-variant/30 rounded-lg px-4 py-3 font-body-md text-body-md outline-none"
+                            type="text" value="Alex Morgan">
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="font-label-md text-label-md text-on-surface-variant">Số điện thoại</label>
+                        <input
+                            class="form-input border border-outline-variant/30 rounded-lg px-4 py-3 font-body-md text-body-md outline-none"
+                            type="tel" value="+84 901 234 567">
+                    </div>
+                    <div class="flex flex-col gap-2 col-span-1 md:col-span-2">
+                        <label class="font-label-md text-label-md text-on-surface-variant">Email (Không thể thay
+                            đổi)</label>
+                        <div
+                            class="bg-surface-container-low border border-outline-variant/20 rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface-variant flex items-center justify-between">
+                            alex.morgan@tripmanager.com
+                            <span class="material-symbols-outlined text-sm opacity-50">lock</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="font-label-md text-label-md text-on-surface-variant">Địa chỉ</label>
+                        <input
+                            class="form-input border border-outline-variant/30 rounded-lg px-4 py-3 font-body-md text-body-md outline-none"
+                            type="text" value="Quận 1, TP. Hồ Chí Minh">
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="font-label-md text-label-md text-on-surface-variant">Ngày sinh</label>
+                        <input
+                            class="form-input border border-outline-variant/30 rounded-lg px-4 py-3 font-body-md text-body-md outline-none"
+                            type="date" value="1995-06-15">
+                    </div>
+                </div>
+            </div>
+            <!-- Block 3: Notifications -->
+            <div class="col-span-12 md:col-span-7 glass-card p-xl rounded-xl bento-item">
+                <h3 class="font-headline-sm text-headline-sm mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">notifications_active</span>
+                    Cài đặt thông báo
+                </h3>
+                <div class="flex flex-col gap-4">
+                    <div
+                        class="flex items-center justify-between p-4 bg-surface-container-lowest border border-outline-variant/20 rounded-xl">
+                        <div class="flex flex-col gap-0.5">
+                            <span class="font-body-md text-body-md font-semibold">Nhận thông báo mời chuyến đi</span>
+                            <span class="font-label-md text-label-md text-on-surface-variant">Nhận thông báo khi bạn bè
+                                mời bạn tham gia lịch trình</span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input checked="" class="sr-only peer" type="checkbox">
+                            <div
+                                class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
+                            </div>
+                        </label>
+                    </div>
+                    <div
+                        class="flex items-center justify-between p-4 bg-surface-container-lowest border border-outline-variant/20 rounded-xl">
+                        <div class="flex flex-col gap-0.5">
+                            <span class="font-body-md text-body-md font-semibold">Cảnh báo thời tiết</span>
+                            <span class="font-label-md text-label-md text-on-surface-variant">Gửi cập nhật thời tiết 24h
+                                trước khi khởi hành</span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input class="sr-only peer" type="checkbox">
+                            <div
+                                class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <!-- Block 4: Actions -->
+            <div class="col-span-12 md:col-span-5 glass-card p-xl rounded-xl flex flex-col justify-between bento-item">
+                <div>
+                    <h3 class="font-headline-sm text-headline-sm mb-2">Hoàn tất cập nhật</h3>
+                    <p class="font-body-md text-body-md text-on-surface-variant mb-8">Hãy chắc chắn rằng các thông tin
+                        cá nhân của bạn là chính xác trước khi lưu.</p>
+                </div>
+                <div class="flex flex-col gap-3">
+                    <button
+                        class="w-full py-4 bg-gradient-to-r from-primary to-primary-container text-white font-bold rounded-lg shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2"
+                        id="saveBtn" onclick="handleSave()">
+                        <span>Lưu thay đổi</span>
+                    </button>
+                    <button
+                        class="w-full py-3 bg-transparent text-on-surface-variant font-semibold rounded-lg hover:bg-surface-container-high transition-colors">
+                        Hủy
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- Avatar Modal -->
+    <div class="fixed inset-0 z-[100] hidden flex items-center justify-center p-md" id="avatarModal">
+        <div class="absolute inset-0 bg-on-surface/40 backdrop-blur-sm" onclick="closeAvatarModal()"></div>
+        <div class="relative bg-white w-full max-w-md rounded-2xl p-xl shadow-2xl animate-in zoom-in-95 duration-200">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-headline-sm text-headline-sm">Cập nhật ảnh đại diện</h3>
+                <button class="p-2 hover:bg-surface-container rounded-full" onclick="closeAvatarModal()">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="space-y-6">
+                <div
+                    class="border-2 border-dashed border-outline-variant/50 rounded-xl p-8 flex flex-col items-center justify-center gap-3 bg-surface-container-lowest hover:border-primary transition-colors cursor-pointer">
+                    <span class="material-symbols-outlined text-4xl text-primary">cloud_upload</span>
+                    <p class="font-body-md text-body-md text-on-surface-variant">Kéo thả ảnh hoặc click để chọn tệp</p>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="font-label-md text-label-md text-on-surface-variant">Hoặc nhập URL hình ảnh</label>
+                    <input
+                        class="form-input border border-outline-variant/30 rounded-lg px-4 py-3 font-body-md text-body-md outline-none w-full"
+                        placeholder="https://..." type="text">
+                </div>
+                <button class="w-full py-3 bg-primary text-white font-bold rounded-lg" onclick="closeAvatarModal()">Cập
+                    nhật</button>
+            </div>
+        </div>
+    </div>
+    <!-- Notification Toast -->
+    <div class="fixed bottom-8 right-8 bg-on-surface text-white px-6 py-4 rounded-xl shadow-2xl transform translate-y-24 transition-transform duration-300 flex items-center gap-3 z-[110]"
+        id="toast">
+        <span class="material-symbols-outlined text-green-400">check_circle</span>
+        <span class="font-body-md text-body-md">Hồ sơ đã được cập nhật thành công!</span>
+    </div>
+    <script>
+        function openAvatarModal() {
+            document.getElementById('avatarModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAvatarModal() {
+            document.getElementById('avatarModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function handleSave() {
+            const btn = document.getElementById('saveBtn');
+            const originalContent = btn.innerHTML;
+
+            // Loading State
+            btn.disabled = true;
+            btn.innerHTML = `
+                <span class="material-symbols-outlined loading-spinner">autorenew</span>
+                <span>Đang lưu...</span>
+            `;
+
+            // Mock saving delay
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+
+                // Show Toast
+                const toast = document.getElementById('toast');
+                toast.classList.remove('translate-y-24');
+
+                setTimeout(() => {
+                    toast.classList.add('translate-y-24');
+                }, 3000);
+            }, 1500);
+        }
+
+        // Handle Active Tabs and Hover effects
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                if (link.textContent === 'Hồ sơ') return;
+                document.querySelectorAll('a').forEach(l => l.classList.remove('text-primary', 'font-bold'));
+                link.classList.add('text-primary', 'font-bold');
+            });
+        });
+    </script>
+</body>
+
+</html>

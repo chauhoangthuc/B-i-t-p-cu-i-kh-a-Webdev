@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+// 1. Quản lý người dùng
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  passwordHash  String
+  name          String?
+  avatarUrl     String?
+  bio           String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  trips         Trip[]         // Các chuyến đi do user tạo
+  tripMembers   TripMember[]   // Các chuyến đi user tham gia
+  expensesPaid  Expense[]      // Các khoản chi phí do user này đứng ra trả
+  expenseShares ExpenseShare[] // Phần tiền user này cần gánh chịu trong các khoản chi
+}
+
+// 2. Quản lý chuyến đi
+model Trip {
+  id          String       @id @default(uuid())
+  title       String
+  destination String
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  userId      String       // Người tạo chuyến đi (Owner)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  members     TripMember[] // Danh sách thành viên tham gia chuyến đi
+  days        TripDay[]    // Lịch trình theo từng ngày trong chuyến đi
+  expenses    Expense[]    // Các khoản chi tiêu trong chuyến đi
+}
+
+// 3. Thành viên tham gia chuyến đi (Phục vụ phân quyền và chia tiền)
+model TripMember {
+  id        String   @id @default(uuid())
+  role      String   @default("MEMBER") // OWNER, EDITOR, MEMBER
+  createdAt DateTime @default(now())
+
+  tripId    String
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tripId, userId])
+}
+
+// 4. Lịch trình từng ngày trong chuyến đi
+model TripDay {
+  id          String       @id @default(uuid())
+  date        DateTime
+  title       String?      // Tiêu đề ngày (VD: Ngày 1: Khám phá phố cổ)
+  createdAt   DateTime     @default(now())
+
+  tripId      String
+  trip        Trip         @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  activities  Activity[]   // Các hoạt động trong ngày
+}
+
+// 5. Hoạt động chi tiết trong ngày (Địa điểm, thời gian, ghi chú)
+model Activity {
+  id          String   @id @default(uuid())
+  time        String?  // Thời gian diễn ra (VD: 08:00 AM)
+  title       String
+  location    String?
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  tripDayId   String
+  tripDay     TripDay  @relation(fields: [tripDayId], references: [id], onDelete: Cascade)
+}
+
+// 6. Quản lý chi phí chuyến đi
+model Expense {
+  id          String         @id @default(uuid())
+  title       String
+  amount      Float
+  category    String?        // Ăn uống, di chuyển, khách sạn,...
+  createdAt   DateTime       @default(now())
+
+  tripId      String
+  trip        Trip           @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  paidById    String
+  paidBy      User           @relation(fields: [paidById], references: [id]) // Ai là người trả tiền gốc
+
+  shares      ExpenseShare[] // Chi tiết chia tiền cho ai trong nhóm
+}
+
+// 7. Bảng trung gian chia tiền chi phí (ExpenseShare)
+model ExpenseShare {
+  id        String   @id @default(uuid())
+  amount    Float    // Số tiền người này phải trả cho khoản chi đó
+
+  expenseId String
+  expense   Expense  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

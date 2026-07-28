@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>TripManager - Tạo chuyến đi mới</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e5e7eb;
+            border-radius: 10px;
+        }
+
+        .glass-effect {
+            backdrop-filter: blur(8px);
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+    </style>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#f8f9fa",
+                        "primary-fixed": "#d8e2ff",
+                        "inverse-primary": "#adc6ff",
+                        "background": "#f8f9fa",
+                        "tertiary-fixed": "#d4e3ff",
+                        "surface-tint": "#005ac2",
+                        "surface-container-low": "#f3f4f5",
+                        "secondary-fixed-dim": "#bcc7de",
+                        "surface-container": "#edeeef",
+                        "primary": "#0058be",
+                        "on-tertiary": "#ffffff",
+                        "primary-container": "#2170e4",
+                        "surface": "#f8f9fa",
+                        "outline": "#727785",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-surface": "#191c1d",
+                        "on-error": "#ffffff",
+                        "on-surface-variant": "#424754",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-primary-container": "#fefcff",
+                        "surface-variant": "#e1e3e4",
+                        "primary-fixed-dim": "#adc6ff",
+                        "error-container": "#ffdad6",
+                        "on-primary": "#ffffff",
+                        "outline-variant": "#c2c6d6",
+                        "on-secondary-fixed": "#111c2d",
+                        "inverse-on-surface": "#f0f1f2",
+                        "secondary-fixed": "#d8e3fb",
+                        "tertiary-fixed-dim": "#a4c9ff",
+                        "surface-container-high": "#e7e8e9",
+                        "on-secondary-fixed-variant": "#3c475a",
+                        "secondary-container": "#d5e0f8",
+                        "on-tertiary-fixed-variant": "#004883",
+                        "inverse-surface": "#2e3132",
+                        "tertiary-container": "#2676c8",
+                        "on-secondary-container": "#586377",
+                        "on-primary-fixed": "#001a42",
+                        "surface-dim": "#d9dadb",
+                        "on-tertiary-container": "#fdfcff",
+                        "on-background": "#191c1d",
+                        "secondary": "#545f73",
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#005da8",
+                        "on-tertiary-fixed": "#001c39",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#004395"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "container-max": "1280px",
+                        "md": "16px",
+                        "gutter": "24px",
+                        "base": "4px",
+                        "xl": "32px",
+                        "sm": "8px",
+                        "sidebar-width": "240px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["11px", { "lineHeight": "1", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "label-md": ["12px", { "lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+
+<body class="bg-surface-bright text-on-surface antialiased overflow-hidden">
+    <!-- Background Navigation Shell (Dimmed Context) -->
+    <div class="fixed inset-0 flex opacity-40 pointer-events-none grayscale-[0.2]">
+        <!-- Side Navigation -->
+        <aside
+            class="h-screen w-sidebar-width bg-surface-container-low border-r border-outline-variant flex flex-col py-lg px-md gap-sm">
+            <div class="mb-xl px-sm">
+                <span class="font-headline-sm text-headline-sm font-black text-primary">TripManager</span>
+            </div>
+            <nav class="flex-1 space-y-1">
+                <div
+                    class="flex items-center gap-md px-md py-sm text-primary font-semibold bg-secondary-container rounded-lg">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <span class="font-label-md text-label-md">Dashboard</span>
+                </div>
+                <div class="flex items-center gap-md px-md py-sm text-on-surface-variant">
+                    <span class="material-symbols-outlined">flight_takeoff</span>
+                    <span class="font-label-md text-label-md">Trips</span>
+                </div>
+                <div class="flex items-center gap-md px-md py-sm text-on-surface-variant">
+                    <span class="material-symbols-outlined">receipt_long</span>
+                    <span class="font-label-md text-label-md">Expenses</span>
+                </div>
+                <div class="flex items-center gap-md px-md py-sm text-on-surface-variant">
+                    <span class="material-symbols-outlined">description</span>
+                    <span class="font-label-md text-label-md">Documents</span>
+                </div>
+                <div class="flex items-center gap-md px-md py-sm text-on-surface-variant">
+                    <span class="material-symbols-outlined">settings</span>
+                    <span class="font-label-md text-label-md">Settings</span>
+                </div>
+            </nav>
+            <div class="mt-auto border-t border-outline-variant pt-lg px-sm">
+                <div class="flex items-center gap-md">
+                    <div class="w-10 h-10 rounded-full bg-primary-fixed-dim"></div>
+                    <div>
+                        <p class="font-label-md text-label-md font-bold">Alex Rivers</p>
+                        <p class="text-[10px] text-on-surface-variant uppercase tracking-wider">Pro Plan</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        <!-- Main Content Area Placeholder -->
+        <div class="flex-1 flex flex-col">
+            <header
+                class="w-full h-16 bg-surface border-b border-outline-variant flex justify-between items-center px-lg glass-effect">
+                <div class="flex items-center gap-sm">
+                    <span class="material-symbols-outlined text-primary">map</span>
+                    <h1 class="font-headline-sm text-headline-sm font-bold text-on-surface">Dashboard</h1>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-outline-variant"></div>
+            </header>
+            <main class="p-lg grid grid-cols-12 gap-gutter">
+                <div class="col-span-8 h-64 rounded-2xl border border-outline-variant bg-surface-container-lowest">
+                </div>
+                <div class="col-span-4 h-64 rounded-2xl border border-outline-variant bg-surface-container-lowest">
+                </div>
+                <div class="col-span-12 h-96 rounded-2xl border border-outline-variant bg-surface-container-lowest">
+                </div>
+            </main>
+        </div>
+    </div>
+    <!-- Modal Overlay -->
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-md bg-black/40 backdrop-blur-sm">
+        <!-- Modal Container -->
+        <div
+            class="relative w-full max-w-2xl bg-surface-container-lowest rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in duration-300">
+            <!-- Modal Header -->
+            <div
+                class="px-xl py-lg border-b border-outline-variant flex items-center justify-between bg-surface-container-lowest sticky top-0 z-10">
+                <div class="flex items-center gap-md">
+                    <div class="w-10 h-10 rounded-xl bg-primary-container/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary"
+                            style="font-variation-settings: 'FILL' 1;">flight_takeoff</span>
+                    </div>
+                    <h2 class="font-headline-sm text-headline-sm text-on-surface">Tạo chuyến đi mới</h2>
+                </div>
+                <button
+                    class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-container transition-colors duration-200">
+                    <span class="material-symbols-outlined text-on-surface-variant">close</span>
+                </button>
+            </div>
+            <!-- Modal Content (Scrollable) -->
+            <form class="flex-1 overflow-y-auto px-xl py-lg space-y-lg custom-scrollbar">
+                <!-- Bento Grid Sections -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+                    <!-- Trip Name Block -->
+                    <div class="col-span-full space-y-sm">
+                        <label class="font-label-md text-label-md text-on-surface-variant block">
+                            Tên chuyến đi <span class="text-error">*</span>
+                        </label>
+                        <input
+                            class="w-full px-lg py-md rounded-xl border border-outline-variant bg-surface-bright focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none font-body-md text-body-md"
+                            placeholder="Ví dụ: Khám phá mùa thu Hà Nội" required="" type="text" />
+                    </div>
+                    <!-- Destination Block -->
+                    <div class="col-span-full space-y-sm">
+                        <label class="font-label-md text-label-md text-on-surface-variant block">Điểm đến</label>
+                        <div class="relative">
+                            <span
+                                class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-on-surface-variant">location_on</span>
+                            <input
+                                class="w-full pl-12 pr-lg py-md rounded-xl border border-outline-variant bg-surface-bright focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none font-body-md text-body-md"
+                                placeholder="Nhập thành phố hoặc quốc gia..." type="text" />
+                        </div>
+                    </div>
+                    <!-- Date Range Blocks -->
+                    <div class="space-y-sm">
+                        <label class="font-label-md text-label-md text-on-surface-variant block">Ngày khởi hành</label>
+                        <div class="relative">
+                            <span
+                                class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-on-surface-variant">calendar_month</span>
+                            <input
+                                class="w-full pl-12 pr-lg py-md rounded-xl border border-outline-variant bg-surface-bright focus:border-primary transition-all outline-none font-body-md text-body-md"
+                                type="date" />
+                        </div>
+                    </div>
+                    <div class="space-y-sm">
+                        <label class="font-label-md text-label-md text-on-surface-variant block">Ngày kết thúc</label>
+                        <div class="relative">
+                            <span
+                                class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-on-surface-variant">calendar_month</span>
+                            <input
+                                class="w-full pl-12 pr-lg py-md rounded-xl border border-outline-variant bg-surface-bright focus:border-primary transition-all outline-none font-body-md text-body-md"
+                                type="date" />
+                        </div>
+                    </div>
+                    <!-- Cover Image Gallery -->
+                    <div class="col-span-full space-y-sm">
+                        <div class="flex justify-between items-center mb-xs">
+                            <label class="font-label-md text-label-md text-on-surface-variant">Ảnh bìa</label>
+                            <button
+                                class="text-primary font-label-md text-label-md hover:underline flex items-center gap-xs"
+                                type="button">
+                                <span class="material-symbols-outlined text-[14px]">upload</span>
+                                Upload custom
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-4 gap-md">
+                            <div
+                                class="relative aspect-video rounded-lg overflow-hidden border-2 border-primary cursor-pointer group">
+                                <img class="w-full h-full object-cover"
+                                    data-alt="A cinematic wide landscape of Ha Long Bay at sunset, with limestone karsts jutting out of emerald green waters under a warm golden sky. The photography is professional and atmospheric, fitting a high-end travel application style."
+                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPdib7AiZ2Sy43Pjezo_oWHqRdKVglrS6eMpWOid88R1v_Ni3qWnE-r7743VD3tET5VmYb0I-pqpy3zi05kuiB-L6TatB8rEObWL-KMR2QKnuXq8zTzd_bQPq2ie-m6KRyP2WWb-3VRfncaFNo-6Us38RPRblGLxF7KWmJR1uhxaMHJur5vn40oq9RR_kKn3yKqKm-eg7aKQt5aPPpAZHG3ZV2iIh93Hm43SqwF4C8XSuFXTuUwcpaiH3VSdllfqrevRukGpib-Ug" />
+                                <div class="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                                    <span
+                                        class="material-symbols-outlined text-on-primary-container bg-primary rounded-full p-xs text-xs">check</span>
+                                </div>
+                            </div>
+                            <div
+                                class="aspect-video rounded-lg overflow-hidden border border-outline-variant cursor-pointer hover:border-primary/50 transition-all group">
+                                <img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                    data-alt="A serene aerial view of Sapa's rice terraces in Vietnam, draped in morning mist with vibrant green hues. High-definition travel photography, soft natural lighting, minimalist professional aesthetic."
+                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0ox2khXKTCwH22pmPmohXGBzdR4Y2cdPxuBizYIXwrD6OEJqc9Hauf1NJA4G4BTUjpb2SKMjSJBO2YGyXF5vfqciko1iwqNbIA2mU5X9sUjvgeM3wwRUZVLjiRpAndMvYkzZ_A4p3KopwVyQuWDbPJvl5MA2bWmpQ3eKxaLimOuO2segM6Bd7vgjrounEWPVS7FFietdJH4RtBlnzDcqFEEYJJKe7eFC38XvFu7RvTuoeNv5vEPlTgkKwCDRlhiUAXMT_lcMqGnY" />
+                            </div>
+                            <div
+                                class="aspect-video rounded-lg overflow-hidden border border-outline-variant cursor-pointer hover:border-primary/50 transition-all group">
+                                <img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                    data-alt="The ancient streets of Hoi An at dusk, illuminated by colorful silk lanterns reflecting in the calm river. Cinematic travel shot, warm moody lighting, high clarity and sophisticated visual style."
+                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDyYiWWROVVeiu4w1djZUIWSgmcwWIWvlMffaMAUotMsQXkIJnA3p7SlDHmk9iCt7CTRuNKX0y_4VFuK41Ls7KjVCFVx01aKJlDPuKClVx3S0rliQfNzPIlMsdCdpgOqscwhOVcmmCklOMK5o-P_WD_3yYpHmRiFzPe96e75dbkopP-cy14NXikalWxK21-UhoPSe5qONqrac1H-o7m1P6UzzGKLRlihEmY6aC7sOSqkru5lkpFkB8HkqWHQNeKNtz0Lhv85ROnm9Y" />
+                            </div>
+                            <div
+                                class="aspect-video rounded-lg overflow-hidden border border-outline-variant cursor-pointer hover:border-primary/50 transition-all group">
+                                <img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                    data-alt="A minimalist architectural shot of modern Hanoi skyline with a mix of traditional rooftops, photographed during the blue hour. Professional travel imagery with clean lines and a premium atmosphere."
+                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFprwWeyVhzlXzrpsrUq2hBp8PR5Zn05A1j6RLeEKpy0FuQgl-1e-ob2hG-rybpjyRIZcvF1LQe3rQi1wkKk6rWyiwvTS0GnkT1QsBPEUQUd7F8Ploo4qlc0dbuHbt1Xy5shbWmgsvTj-TakJEUyLmbxKVoCE4dfnB_Pq9gGp_DKMWD5o-NGaipDYP5aOaEG471Z35td0yDPg8wqBl4FG7g0rIIZ9kje7K1DXIGd_6gMfiH2Rclr8jHsI3TZKzFtZ4YSfm5KYT2uM" />
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Members Invite -->
+                    <div class="col-span-full space-y-sm">
+                        <label class="font-label-md text-label-md text-on-surface-variant block">Thành viên</label>
+                        <div
+                            class="flex flex-wrap gap-sm p-md rounded-xl border border-outline-variant bg-surface-bright focus-within:border-primary transition-all">
+                            <div
+                                class="flex items-center gap-xs bg-secondary-container text-on-secondary-container px-sm py-[2px] rounded-full font-label-md text-label-md">
+                                <span
+                                    class="w-4 h-4 rounded-full bg-primary-fixed flex items-center justify-center text-[10px]">L</span>
+                                Linh Nguyen
+                                <button class="material-symbols-outlined text-[14px] hover:text-error"
+                                    type="button">close</button>
+                            </div>
+                            <div
+                                class="flex items-center gap-xs bg-secondary-container text-on-secondary-container px-sm py-[2px] rounded-full font-label-md text-label-md">
+                                <span
+                                    class="w-4 h-4 rounded-full bg-primary-fixed flex items-center justify-center text-[10px]">K</span>
+                                Khoa Pham
+                                <button class="material-symbols-outlined text-[14px] hover:text-error"
+                                    type="button">close</button>
+                            </div>
+                            <input
+                                class="flex-1 min-w-[150px] bg-transparent border-none focus:ring-0 p-0 font-body-md text-body-md outline-none"
+                                placeholder="Email hoặc tên người dùng..." type="text" />
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <!-- Modal Footer -->
+            <div
+                class="px-xl py-lg border-t border-outline-variant flex items-center justify-end gap-md bg-surface-container-lowest">
+                <button
+                    class="px-lg py-md rounded-xl font-label-md text-label-md text-on-surface-variant bg-white border border-outline-variant hover:bg-surface-container transition-all active:scale-95"
+                    type="button">
+                    Hủy
+                </button>
+                <button
+                    class="px-lg py-md rounded-xl font-label-md text-label-md text-white bg-primary hover:bg-primary-container shadow-lg shadow-primary/20 transition-all active:scale-95 flex items-center gap-sm"
+                    type="submit">
+                    Tạo chuyến đi
+                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- Micro-interaction Scripts -->
+    <script>
+        document.querySelectorAll('button, input').forEach(el => {
+            el.addEventListener('mousedown', () => {
+                if (!el.classList.contains('scale-95')) {
+                    el.classList.add('scale-95');
+                }
+            });
+            el.addEventListener('mouseup', () => el.classList.remove('scale-95'));
+            el.addEventListener('mouseleave', () => el.classList.remove('scale-95'));
+        });
+
+        // Simple gallery selection logic
+        const galleryItems = document.querySelectorAll('.grid.grid-cols-4 > div');
+        galleryItems.forEach(item => {
+            item.addEventListener('click', () => {
+                galleryItems.forEach(i => {
+                    i.classList.remove('border-primary');
+                    i.classList.add('border-outline-variant');
+                    const check = i.querySelector('div');
+                    if (check) check.remove();
+                });
+                item.classList.add('border-primary');
+                item.classList.remove('border-outline-variant');
+                const checkOverlay = document.createElement('div');
+                checkOverlay.className = "absolute inset-0 bg-primary/10 flex items-center justify-center";
+                checkOverlay.innerHTML = `<span class="material-symbols-outlined text-on-primary-container bg-primary rounded-full p-xs text-xs">check</span>`;
+                item.appendChild(checkOverlay);
+            });
+        });
+    </script>
+</body>
+
+</html>

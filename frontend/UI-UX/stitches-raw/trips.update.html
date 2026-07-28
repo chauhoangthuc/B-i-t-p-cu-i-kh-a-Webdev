@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Chỉnh sửa chuyến đi - TripManager</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "#d9dadb",
+                        "secondary": "#545f73",
+                        "background": "#f8f9fa",
+                        "on-tertiary-fixed": "#001c39",
+                        "on-primary-fixed-variant": "#004395",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-tertiary-container": "#fdfcff",
+                        "on-primary-fixed": "#001a42",
+                        "tertiary-container": "#2676c8",
+                        "secondary-fixed": "#d8e3fb",
+                        "inverse-on-surface": "#f0f1f2",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#edeeef",
+                        "primary-fixed": "#d8e2ff",
+                        "on-secondary-container": "#586377",
+                        "on-background": "#191c1d",
+                        "surface-container-highest": "#e1e3e4",
+                        "primary-fixed-dim": "#adc6ff",
+                        "inverse-surface": "#2e3132",
+                        "on-secondary-fixed-variant": "#3c475a",
+                        "tertiary-fixed": "#d4e3ff",
+                        "tertiary-fixed-dim": "#a4c9ff",
+                        "surface-tint": "#005ac2",
+                        "surface-container-high": "#e7e8e9",
+                        "surface-bright": "#f8f9fa",
+                        "inverse-primary": "#adc6ff",
+                        "secondary-fixed-dim": "#bcc7de",
+                        "on-secondary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f3f4f5",
+                        "on-error-container": "#93000a",
+                        "outline": "#727785",
+                        "on-primary-container": "#fefcff",
+                        "on-secondary-fixed": "#111c2d",
+                        "on-tertiary-fixed-variant": "#004883",
+                        "primary-container": "#2170e4",
+                        "surface-variant": "#e1e3e4",
+                        "outline-variant": "#c2c6d6",
+                        "on-surface-variant": "#424754",
+                        "surface": "#f8f9fa",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#0058be",
+                        "on-surface": "#191c1d",
+                        "error": "#ba1a1a",
+                        "tertiary": "#005da8",
+                        "secondary-container": "#d5e0f8"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "container-max": "1280px",
+                        "base": "4px",
+                        "xl": "32px",
+                        "gutter": "24px",
+                        "lg": "24px",
+                        "sidebar-width": "240px",
+                        "sm": "8px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-sm": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .bento-card {
+            background-color: #ffffff;
+            border: 1px solid #E5E7EB;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .bento-card:hover {
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar-expanded {
+            width: 240px;
+        }
+
+        .sidebar-collapsed {
+            width: 72px;
+        }
+    </style>
+</head>
+
+<body class="bg-background text-on-surface">
+    <!-- Sidebar Navigation -->
+    <nav
+        class="h-screen fixed left-0 top-0 transition-all duration-300 ease-in-out z-40 border-r border-outline-variant bg-surface group flex flex-col py-md overflow-hidden w-[72px] hover:w-[240px]">
+        <div class="px-md mb-xl flex items-center gap-3">
+            <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-on-primary">explore</span>
+            </div>
+            <span
+                class="font-headline-md text-headline-md font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">TripManager</span>
+        </div>
+        <div class="flex-1 space-y-sm px-sm">
+            <a class="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-container-high transition-colors text-on-surface-variant"
+                href="#">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span
+                    class="font-label-md text-label-md opacity-0 group-hover:opacity-100 transition-opacity">Dashboard</span>
+            </a>
+            <a class="flex items-center gap-3 p-3 rounded-xl text-primary font-bold border-r-2 border-primary bg-surface-container-high"
+                href="#">
+                <span class="material-symbols-outlined">flight_takeoff</span>
+                <span
+                    class="font-label-md text-label-md opacity-0 group-hover:opacity-100 transition-opacity">Trips</span>
+            </a>
+            <a class="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-container-high transition-colors text-on-surface-variant"
+                href="#">
+                <span class="material-symbols-outlined">calendar_today</span>
+                <span
+                    class="font-label-md text-label-md opacity-0 group-hover:opacity-100 transition-opacity">Calendar</span>
+            </a>
+            <a class="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-container-high transition-colors text-on-surface-variant"
+                href="#">
+                <span class="material-symbols-outlined">payments</span>
+                <span
+                    class="font-label-md text-label-md opacity-0 group-hover:opacity-100 transition-opacity">Expenses</span>
+            </a>
+        </div>
+        <div class="px-sm space-y-sm">
+            <a class="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-container-high transition-colors text-on-surface-variant"
+                href="#">
+                <span class="material-symbols-outlined">settings</span>
+                <span
+                    class="font-label-md text-label-md opacity-0 group-hover:opacity-100 transition-opacity">Settings</span>
+            </a>
+            <div class="flex items-center gap-3 p-3 mt-4">
+                <div class="w-8 h-8 rounded-full overflow-hidden shrink-0">
+                    <img class="w-full h-full object-cover"
+                        data-alt="A professional headshot of Alex Rivers, a young professional man with a friendly smile, clean-shaven, wearing a navy blue blazer over a crisp white shirt. The background is a soft-focus modern office interior with natural light and hints of indoor greenery, reflecting a systematic and technical elegance aesthetic."
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdre4VePg01Dgu6pnMmfb1D2qNy17jPLz-VzysFt4Cj5CGlagg0lRCgwHNy-Axb-MjcxxrwLU1pUrxhvvnOWHbzmbwe62TDeoXFbihWQ0JCKBVPM14fWsunjnyBAOJl2XnLQvfa94XhIU-f5kPtWD9DQcACDw0K5NqnLo9lXswL4Sp1KlXZuAinvyfO57uA160wUt-wdTfZgszp4Qn2_DfK5jWNWnGhZuIWaBqRYsc6TBqOkPNf8Mvn4N-HaFgmiw4KzeUGnJ4YqE" />
+                </div>
+                <div class="opacity-0 group-hover:opacity-100 transition-opacity overflow-hidden whitespace-nowrap">
+                    <p class="font-label-md text-label-md font-bold">Alex Rivers</p>
+                    <p class="text-[10px] text-secondary">Pro Member</p>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- Top AppBar -->
+    <header
+        class="flex justify-between items-center w-full px-lg h-16 ml-[72px] md:ml-[240px] sticky top-0 z-30 bg-surface/80 backdrop-blur-md border-b border-outline-variant">
+        <div class="flex items-center gap-4">
+            <div
+                class="bg-surface-container-low px-4 py-2 rounded-full border border-outline-variant flex items-center gap-2 cursor-pointer hover:bg-surface-container transition-colors">
+                <span class="material-symbols-outlined text-primary text-sm">location_on</span>
+                <span class="font-label-md text-label-md">Đà Nẵng Summer '24</span>
+                <span class="material-symbols-outlined text-sm">expand_more</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <button class="hover:bg-surface-container rounded-full p-2 transition-transform active:scale-95">
+                <span class="material-symbols-outlined">language</span>
+            </button>
+            <button class="hover:bg-surface-container rounded-full p-2 transition-transform active:scale-95 relative">
+                <span class="material-symbols-outlined">notifications</span>
+                <span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+            </button>
+            <button
+                class="flex items-center gap-2 font-label-md text-label-md text-primary font-bold px-4 py-2 hover:bg-primary/10 rounded-full transition-colors">
+                Lưu thay đổi
+            </button>
+        </div>
+    </header>
+    <!-- Main Content -->
+    <main class="ml-[72px] md:ml-[240px] p-lg max-w-container-max mx-auto">
+        <!-- Page Title & Header -->
+        <div class="mb-lg flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button
+                    class="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center hover:bg-surface-container transition-colors">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                </button>
+                <h1 class="font-headline-lg text-headline-lg text-on-surface">Chỉnh sửa chuyến đi</h1>
+            </div>
+            <div class="flex items-center gap-3">
+                <button
+                    class="px-6 py-2.5 font-label-md text-label-md border border-outline-variant rounded-xl hover:bg-surface-container-high transition-colors">Hủy</button>
+                <button
+                    class="px-6 py-2.5 font-label-md text-label-md bg-primary text-on-primary rounded-xl hover:opacity-90 transition-all shadow-sm">Lưu
+                    thay đổi</button>
+            </div>
+        </div>
+        <!-- Bento Grid Layout -->
+        <div class="grid grid-cols-12 gap-6 pb-20">
+            <!-- Core Info Card -->
+            <section class="col-span-12 lg:col-span-8 bento-card flex flex-col gap-6">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-headline-sm text-headline-sm flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">edit_note</span>
+                        Thông tin cơ bản
+                    </h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="flex flex-col gap-2">
+                        <label class="font-label-md text-label-md text-secondary">Tên chuyến đi</label>
+                        <input
+                            class="bg-background border border-outline-variant rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                            type="text" value="Kỳ nghỉ hè Đà Nẵng" />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="font-label-md text-label-md text-secondary">Điểm đến</label>
+                        <div class="relative">
+                            <input
+                                class="w-full bg-background border border-outline-variant rounded-xl px-4 py-3 pl-10 focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                                type="text" value="Đà Nẵng, Việt Nam" />
+                            <span
+                                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary">location_on</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2 md:col-span-2">
+                        <label class="font-label-md text-label-md text-secondary">Thời gian (Ngày khởi hành - Kết
+                            thúc)</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="relative">
+                                <input
+                                    class="w-full bg-background border border-outline-variant rounded-xl px-4 py-3 pl-10 focus:ring-2 focus:ring-primary focus:border-primary"
+                                    type="date" value="2024-07-15" />
+                                <span
+                                    class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary">calendar_today</span>
+                            </div>
+                            <div class="relative">
+                                <input
+                                    class="w-full bg-background border border-outline-variant rounded-xl px-4 py-3 pl-10 focus:ring-2 focus:ring-primary focus:border-primary"
+                                    type="date" value="2024-07-20" />
+                                <span
+                                    class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary">event_available</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- Settings Sidebar Card -->
+            <section class="col-span-12 lg:col-span-4 bento-card flex flex-col gap-6">
+                <h2 class="font-headline-sm text-headline-sm flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">settings_applications</span>
+                    Thiết lập
+                </h2>
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-body-md text-body-md font-semibold">Công khai chuyến đi</p>
+                            <p class="text-[12px] text-secondary">Cho phép người khác tìm thấy</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input class="sr-only peer" type="checkbox" value="" />
+                            <div
+                                class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
+                            </div>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-body-md text-body-md font-semibold">Thông báo</p>
+                            <p class="text-[12px] text-secondary">Cập nhật lịch trình qua email</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input checked="" class="sr-only peer" type="checkbox" value="" />
+                            <div
+                                class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                <hr class="border-outline-variant" />
+                <button
+                    class="w-full flex items-center justify-center gap-2 text-error hover:bg-error/5 p-3 rounded-xl transition-colors font-label-md text-label-md">
+                    <span class="material-symbols-outlined">delete_outline</span>
+                    Xóa chuyến đi
+                </button>
+            </section>
+            <!-- Cover Image Selection -->
+            <section class="col-span-12 lg:col-span-7 bento-card flex flex-col gap-6">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-headline-sm text-headline-sm flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">image</span>
+                        Ảnh bìa chuyến đi
+                    </h2>
+                    <button class="text-primary font-label-md text-label-md flex items-center gap-1 hover:underline">
+                        <span class="material-symbols-outlined text-sm">upload</span>
+                        Tải lên ảnh mới
+                    </button>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div
+                        class="relative aspect-video rounded-xl overflow-hidden cursor-pointer group ring-2 ring-primary ring-offset-2">
+                        <img class="w-full h-full object-cover"
+                            data-alt="A wide panoramic shot of the Golden Bridge in Ba Na Hills, Da Nang, Vietnam, held up by two massive stone hands. The morning mist clings to the surrounding lush green mountains, creating a serene and mystical atmosphere. The color palette is composed of natural greens, warm gold, and misty grays, aligning with a high-definition minimalist travel aesthetic."
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBdYW0bJK9pEqPBj0SMFZEaI-ngbiv-XEGwa-bqIz1BFzjyA383Fega56-ETdnb_R6qxTgncnNPqRkJQ3ocxZ3EvLLbVOnNdj5wOd20N7lKDIMdsz0Aui2W9YgLlRCotLbmxUiOXefo8983kwB9EDi3TQg-IUlt1zk6uGAgE-b4Nq8Fo_Km6X9owRbpEL-tEST43WPZU2zYtv0WBcVlNmUds2Hxj9uCPMjCmkocK7ntFGX8l4uTZHqGxTCfWM0eTHUh04t5PwEpSxE" />
+                        <div class="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-white">check_circle</span>
+                        </div>
+                    </div>
+                    <div
+                        class="aspect-video rounded-xl overflow-hidden cursor-pointer group hover:ring-2 hover:ring-primary/50 transition-all">
+                        <img class="w-full h-full object-cover"
+                            data-alt="A tranquil beach scene at sunset in Da Nang, with soft pink and orange hues painting the sky. The silhouette of fishing boats dots the calm horizon, and the gentle waves of the East Sea lap against the pristine white sand. The mood is peaceful and professional, highlighting technical elegance and spatial clarity."
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQFP70y9l1buKbKxpPm22TtCQXbxUvbrKB8LCzAJgyL8g3K_YdhpXS8wVGwb_KxdvQAhGPB77k96Zgsirw58MA_XFJ75ayF3usBzNj5f4Ek1xorSe_1t_44dHXfju0Xg9t3M9Mat2yeIcM1hYQB9mGf5zwUxe6ZciMv6Nt0yklFe_EYvsAU-leRQg_iIy-wIS5UBRrNzx2wTfErpqhUWRQ3_c6HK6IqsUJodpW6XgQACbttUsrHoKjxGRwvqTK1JA7Ot_2QAIaUuc" />
+                    </div>
+                    <div
+                        class="aspect-video rounded-xl overflow-hidden cursor-pointer group hover:ring-2 hover:ring-primary/50 transition-all">
+                        <img class="w-full h-full object-cover"
+                            data-alt="High-density minimalist street photography of Hoi An Ancient Town at night. Glowing colorful lanterns illuminate the yellow colonial architecture and narrow cobbled streets. The scene captures the sophisticated and systematic vibe of a premium travel destination with rich tonal layering."
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqVVumcDzF0I1ixQYKMJTrQkdJDeDPZlOHC3eDhVKSrER5IHLMvR3B2BzH3z6TuO2uf-JG_gfOXcUeWIuCof1g-EE_8oqW_MRDL4LFMVBOIgsEwS9LNfIp1r4UtWowhJRlMwNdSfixfyoytNP7pKEryXCO_wuIlD9sIgTCMz73j1iV8VhbSuOgWg-2ssM-qo78I48nL9Y_mE0WlgQq0TtgqUuc9Q_C-wB6-VcU__JDbrrDMG1teyEX87rTas2kIFaptml5G-_K-Yc" />
+                    </div>
+                    <div
+                        class="aspect-video rounded-xl overflow-hidden cursor-pointer group hover:ring-2 hover:ring-primary/50 transition-all relative">
+                        <img class="w-full h-full object-cover"
+                            data-alt="A modern aerial view of the Dragon Bridge in Da Nang City at night, glowing with vibrant LED lights reflecting on the Han River. The surrounding cityscape features minimalist high-rise buildings and clean urban planning, echoing a high-performance productivity and clarity design style."
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBODK0c8DDRaP4HoARJxfE7s0Zh2GwcCvX2Zq9p8bXjDahyEFp0P7d-oRqPWdjBwNNcTTalKnoTV4Rdp08QcM8V1fTXGoDAaTBvC7zm1_7ouCWoQqtHxCGL9Dk_rUiBc3Jc-cEUYPn1ZEl36BqJFMoHarmk1R_P6fQY3gLqRtqQMCXL1LBeR5F4mnjH1tJQ9ESF_jdKITeyjA1c0LbbSXOZe9j1fpG9o6ljipCzZ9XoPdx3HFwM8uQVZM3OZbZ3WbL7XsrRYzthKJo" />
+                        <div
+                            class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span class="text-white text-xs font-bold uppercase tracking-wider">Xem thêm</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- Member Management -->
+            <section class="col-span-12 lg:col-span-5 bento-card flex flex-col gap-6">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-headline-sm text-headline-sm flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">group</span>
+                        Thành viên (4)
+                    </h2>
+                </div>
+                <div class="flex flex-col gap-3">
+                    <div class="flex items-center justify-between p-3 bg-surface-container-low rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <img class="w-10 h-10 rounded-full object-cover"
+                                data-alt="Avatar portrait of a stylish woman with sunglasses, representing Minh Thu. She has a warm smile and is set against a bright, airy coastal background. The image is clean and minimalist, maintaining the pro feel of the TripManager application."
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLGCZipStWr4XILDTuqulfIEkPDvt7ttYJA7DFbt2bwJeLEQi2fnN3vxB6wBa6116kCMf91ht8VugUqbcy_gFVJY4sjU0QgssEVZfqi8twJyl4w5aGaENU106eBT1-_9cuvDRtQAi1tPYY9bR4YTpgCeWHcNdG260yI_99ZMxecP-RP_XhMgqH8K5wAKZ6nibAurAmeNBZguzvBwH7YZdVDOn_8ULviK14aN6MA78Rr7Ha1dBq8yK4KPe7h-YnjgWPw98t7TavSMo" />
+                            <div>
+                                <p class="font-body-md text-body-md font-bold">Minh Thư</p>
+                                <p class="text-[12px] text-primary">Host (Chủ sở hữu)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="flex items-center justify-between p-3 hover:bg-surface-container-low rounded-xl transition-colors">
+                        <div class="flex items-center gap-3">
+                            <img class="w-10 h-10 rounded-full object-cover"
+                                data-alt="Portrait of a young professional man named Hoang Anh, wearing a casual grey t-shirt, with a modern urban background. The lighting is soft and high-key, aligning with the light-mode aesthetic of the dashboard."
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBI57CyS6nePeE2U8RSw2VLGkwtVNjkhXZr0uJCkxd109OlWUoma4Ff9VP68M7sI_dqVxkxM2UqlhovGkNoMs_SlRQ6p-TNghPqMae5xwMxNUTIeFee_B6k1Y4oINuZS-D7RhlWSHnNVQ1BagfDzF4rG8srRVwGB2cYAFn1t6qD-wnazm_jZGz--cVeLYO8R2cUo_e_Pts620jUbyKetBLfudnmZjvfW4hDoQXQH5rQHf8IXmJOKOFiz882JGIYH3Tn9QxVxOhPdXo" />
+                            <div>
+                                <p class="font-body-md text-body-md font-bold">Hoàng Anh</p>
+                                <p class="text-[12px] text-secondary">Member</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button class="p-2 text-secondary hover:text-primary transition-colors">
+                                <span class="material-symbols-outlined text-sm">edit</span>
+                            </button>
+                            <button class="p-2 text-secondary hover:text-error transition-colors">
+                                <span class="material-symbols-outlined text-sm">remove_circle</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-2 flex gap-2">
+                    <input
+                        class="flex-1 bg-background border border-outline-variant rounded-xl px-4 py-2 focus:ring-2 focus:ring-primary transition-all text-sm"
+                        placeholder="Nhập email thành viên..." type="text" />
+                    <button
+                        class="bg-primary text-on-primary px-4 py-2 rounded-xl font-label-md text-label-md hover:opacity-90 transition-all flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">add</span>
+                        Mời
+                    </button>
+                </div>
+            </section>
+        </div>
+    </main>
+    <!-- Floating Action Background Blur / Success Toast Mock (Optional JS for micro-interaction) -->
+    <div class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface px-6 py-3 rounded-full shadow-xl flex items-center gap-3 opacity-0 translate-y-10 transition-all duration-500 pointer-events-none z-50"
+        id="save-toast">
+        <span class="material-symbols-outlined text-tertiary-fixed">check_circle</span>
+        <span class="font-label-md text-label-md">Thay đổi đã được lưu thành công!</span>
+    </div>
+    <script>
+        // Simple micro-interaction for the save buttons
+        const saveButtons = document.querySelectorAll('button:contains("Lưu thay đổi")');
+        // Since :contains isn't standard CSS, we manually find them
+        document.querySelectorAll('button').forEach(btn => {
+            if (btn.innerText.includes('Lưu thay đổi')) {
+                btn.addEventListener('click', () => {
+                    const toast = document.getElementById('save-toast');
+                    toast.classList.remove('opacity-0', 'translate-y-10');
+                    toast.classList.add('opacity-100', 'translate-y-0');
+                    setTimeout(() => {
+                        toast.classList.add('opacity-0', 'translate-y-10');
+                        toast.classList.remove('opacity-100', 'translate-y-0');
+                    }, 3000);
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

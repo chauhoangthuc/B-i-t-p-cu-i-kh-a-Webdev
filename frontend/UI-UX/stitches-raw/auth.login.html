@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html class="light" lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Đăng nhập | TripManager</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed": "#111c2d",
+                        "primary": "#0058be",
+                        "on-tertiary-container": "#fdfcff",
+                        "inverse-surface": "#2e3132",
+                        "inverse-primary": "#adc6ff",
+                        "primary-container": "#2170e4",
+                        "surface-bright": "#f8f9fa",
+                        "secondary-fixed-dim": "#bcc7de",
+                        "on-surface": "#191c1d",
+                        "surface-container": "#edeeef",
+                        "on-secondary-container": "#586377",
+                        "on-secondary-fixed-variant": "#3c475a",
+                        "surface-container-high": "#e7e8e9",
+                        "secondary-fixed": "#d8e3fb",
+                        "surface-variant": "#e1e3e4",
+                        "tertiary-fixed": "#d4e3ff",
+                        "primary-fixed": "#d8e2ff",
+                        "tertiary-fixed-dim": "#a4c9ff",
+                        "outline-variant": "#c2c6d6",
+                        "tertiary": "#005da8",
+                        "surface-tint": "#005ac2",
+                        "secondary-container": "#d5e0f8",
+                        "on-tertiary-fixed-variant": "#004883",
+                        "on-error-container": "#93000a",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#2676c8",
+                        "secondary": "#545f73",
+                        "primary-fixed-dim": "#adc6ff",
+                        "error-container": "#ffdad6",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed": "#001c39",
+                        "on-background": "#191c1d",
+                        "on-surface-variant": "#424754",
+                        "surface-dim": "#d9dadb",
+                        "on-primary-fixed": "#001a42",
+                        "on-error": "#ffffff",
+                        "outline": "#727785",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#fefcff",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-primary-fixed-variant": "#004395",
+                        "on-primary": "#ffffff",
+                        "surface": "#f8f9fa",
+                        "background": "#f8f9fa",
+                        "surface-container-low": "#f3f4f5",
+                        "inverse-on-surface": "#f0f1f2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "lg": "24px",
+                        "gutter": "24px",
+                        "sidebar-width": "240px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "xl": "32px",
+                        "base": "4px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "headline-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "label-sm": ["11px", { "lineHeight": "1", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-gradient {
+            background: linear-gradient(135deg, #0058be 0%, #2170e4 100%);
+            transition: all 0.3s ease;
+        }
+
+        .btn-gradient:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 88, 190, 0.3);
+        }
+
+        .input-focus-ring:focus {
+            ring-color: #0058be;
+            border-color: #0058be;
+        }
+
+        .loader {
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+
+<body class="bg-background min-h-screen flex flex-col items-center justify-center relative overflow-x-hidden">
+    <!-- Header -->
+    <header
+        class="w-full h-16 sticky top-0 flex justify-between items-center px-lg z-40 backdrop-blur-md bg-white/80 border-b border-outline-variant">
+        <div class="flex items-center gap-sm">
+            <span class="material-symbols-outlined text-primary text-[32px]">map</span>
+            <span class="text-headline-sm font-bold text-on-surface">TripManager</span>
+        </div>
+        <a class="text-body-md font-medium text-primary hover:underline transition-all" href="#">Trợ giúp</a>
+    </header>
+    <!-- Main Content Canvas -->
+    <main class="flex-grow w-full flex items-center justify-center p-md relative">
+        <!-- Subtle Ambient Background Element -->
+        <div
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] pointer-events-none">
+        </div>
+        <!-- Glass Login Card -->
+        <div class="glass-card w-full max-w-[440px] p-xl rounded-xl z-10 flex flex-col gap-lg animate-in fade-in zoom-in duration-500"
+            id="loginCard">
+            <div class="text-center space-y-2">
+                <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Chào mừng trở lại</h1>
+                <p class="font-body-md text-body-md text-on-surface-variant">Vui lòng đăng nhập để tiếp tục</p>
+            </div>
+            <form class="flex flex-col gap-md" id="loginForm">
+                <!-- Email Field -->
+                <div class="space-y-1.5">
+                    <label class="font-label-md text-label-md text-on-surface-variant px-1" for="email">Email</label>
+                    <div class="relative flex items-center">
+                        <span class="material-symbols-outlined absolute left-3 text-[20px] text-outline">mail</span>
+                        <input
+                            class="w-full h-12 pl-10 pr-4 bg-white/50 border border-outline-variant rounded-lg font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            id="email" placeholder="your@email.com" required="" type="email">
+                    </div>
+                    <p class="hidden text-error text-label-sm px-1 mt-1" id="emailError">Vui lòng nhập email hợp lệ</p>
+                </div>
+                <!-- Password Field -->
+                <div class="space-y-1.5">
+                    <div class="flex justify-between items-center px-1">
+                        <label class="font-label-md text-label-md text-on-surface-variant" for="password">Mật
+                            khẩu</label>
+                        <button class="text-label-md text-primary font-semibold hover:underline"
+                            onclick="openForgotModal()" type="button">Quên mật khẩu?</button>
+                    </div>
+                    <div class="relative flex items-center">
+                        <span class="material-symbols-outlined absolute left-3 text-[20px] text-outline">lock</span>
+                        <input
+                            class="w-full h-12 pl-10 pr-10 bg-white/50 border border-outline-variant rounded-lg font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            id="password" placeholder="••••••••" required="" type="password">
+                        <button class="absolute right-3 text-outline hover:text-on-surface transition-colors"
+                            onclick="togglePassword()" type="button">
+                            <span class="material-symbols-outlined text-[20px]"
+                                id="passwordToggleIcon">visibility</span>
+                        </button>
+                    </div>
+                    <p class="hidden text-error text-label-sm px-1 mt-1" id="passwordError">Mật khẩu phải có ít nhất 6
+                        ký tự</p>
+                </div>
+                <button
+                    class="btn-gradient w-full h-12 rounded-lg text-on-primary font-semibold flex items-center justify-center gap-2 mt-2"
+                    id="submitBtn" type="submit">
+                    <span id="btnText">ĐĂNG NHẬP</span>
+                    <div class="loader hidden w-5 h-5 border-2 border-white rounded-full" id="btnLoader"></div>
+                </button>
+            </form>
+            <div class="flex items-center gap-md py-2">
+                <div class="h-[1px] flex-grow bg-outline-variant"></div>
+                <span class="text-label-md text-on-surface-variant whitespace-nowrap">Hoặc đăng nhập với</span>
+                <div class="h-[1px] flex-grow bg-outline-variant"></div>
+            </div>
+            <button
+                class="w-full h-12 bg-white border border-outline-variant rounded-lg flex items-center justify-center gap-3 hover:bg-surface-container transition-colors group"
+                onclick="handleGoogleLogin()">
+                <svg height="20" viewBox="0 0 24 24" width="20">
+                    <path
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
+                        fill="#4285F4"></path>
+                    <path
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                        fill="#34A853"></path>
+                    <path
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
+                        fill="#FBBC05"></path>
+                    <path
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                        fill="#EA4335"></path>
+                </svg>
+                <span class="text-body-md font-medium text-on-surface">Đăng nhập với Google</span>
+            </button>
+            <footer class="text-center mt-2">
+                <p class="text-body-md text-on-surface-variant">Chưa có tài khoản? <a
+                        class="text-primary font-bold hover:underline" href="register.html">Đăng ký ngay</a></p>
+            </footer>
+        </div>
+    </main>
+    <!-- Forgot Password Modal -->
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-md modal-overlay hidden opacity-0 transition-opacity duration-300"
+        id="forgotModal">
+        <div
+            class="bg-surface w-full max-w-[400px] rounded-xl p-xl shadow-2xl space-y-md transform scale-95 transition-transform duration-300">
+            <div class="flex justify-between items-start">
+                <div class="space-y-1">
+                    <h3 class="text-headline-sm font-bold text-on-surface">Quên mật khẩu?</h3>
+                    <p class="text-body-md text-on-surface-variant">Chúng tôi sẽ gửi link khôi phục tới email của bạn.
+                    </p>
+                </div>
+                <button class="text-outline hover:text-on-surface" onclick="closeForgotModal()">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div class="space-y-1.5">
+                    <label class="font-label-md text-label-md text-on-surface-variant">Nhập Email</label>
+                    <input
+                        class="w-full h-12 px-4 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                        id="forgotEmail" placeholder="name@company.com" type="email">
+                </div>
+                <button class="btn-gradient w-full h-12 rounded-lg text-on-primary font-semibold"
+                    onclick="handleForgotSubmit()">GỬI LINK KHÔI PHỤC</button>
+            </div>
+        </div>
+    </div>
+    <!-- Notification Toast -->
+    <div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[60] px-lg py-sm bg-inverse-surface text-inverse-on-surface rounded-full font-label-md shadow-lg hidden opacity-0 translate-y-4 transition-all duration-300"
+        id="toast">
+        Thông báo ở đây
+    </div>
+    <script>
+        // Toggle Password Visibility
+        function togglePassword() {
+            const pwdInput = document.getElementById('password');
+            const icon = document.getElementById('passwordToggleIcon');
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text';
+                icon.textContent = 'visibility_off';
+            } else {
+                pwdInput.type = 'password';
+                icon.textContent = 'visibility';
+            }
+        }
+
+        // Modal Controls
+        function openForgotModal() {
+            const modal = document.getElementById('forgotModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.add('opacity-100');
+                modal.querySelector('div').classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeForgotModal() {
+            const modal = document.getElementById('forgotModal');
+            modal.classList.remove('opacity-100');
+            modal.querySelector('div').classList.remove('scale-100');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // Toast Helper
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.remove('opacity-0', 'translate-y-4');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-4');
+                setTimeout(() => toast.classList.add('hidden'), 300);
+            }, 3000);
+        }
+
+        // Mock Social Login
+        function handleGoogleLogin() {
+            showToast("Đang kết nối với tài khoản Google...");
+            setTimeout(() => finalizeLogin(), 1500);
+        }
+
+        // Logic điều hướng đặc biệt
+        function finalizeLogin() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirectPath = urlParams.get('redirect');
+
+            if (redirectPath && redirectPath.startsWith('/invite/')) {
+                showToast("Đăng nhập thành công! Đang chuyển hướng tới lời mời...");
+                setTimeout(() => window.location.href = redirectPath, 1000);
+            } else {
+                showToast("Đăng nhập thành công! Đang vào dashboard...");
+                setTimeout(() => window.location.href = '/dashboard', 1000);
+            }
+        }
+
+        // Form Validation & Submission
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const emailError = document.getElementById('emailError');
+            const passwordError = document.getElementById('passwordError');
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const btnLoader = document.getElementById('btnLoader');
+
+            let isValid = true;
+
+            // Simple Email Regex
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                emailError.classList.remove('hidden');
+                isValid = false;
+            } else {
+                emailError.classList.add('hidden');
+            }
+
+            if (password.length < 6) {
+                passwordError.classList.remove('hidden');
+                isValid = false;
+            } else {
+                passwordError.classList.add('hidden');
+            }
+
+            if (isValid) {
+                // Loading State
+                submitBtn.disabled = true;
+                btnText.textContent = "ĐANG XỬ LÝ...";
+                btnLoader.classList.remove('hidden');
+
+                // Mock API Call
+                setTimeout(() => {
+                    finalizeLogin();
+                }, 2000);
+            }
+        });
+
+        function handleForgotSubmit() {
+            const email = document.getElementById('forgotEmail').value;
+            if (email && email.includes('@')) {
+                showToast("Link khôi phục mật khẩu đã được gửi!");
+                closeForgotModal();
+            } else {
+                showToast("Vui lòng nhập email hợp lệ!");
+            }
+        }
+
+        // Atmospheric Micro-interaction: Mouse parallax on card
+        const card = document.getElementById('loginCard');
+        document.addEventListener('mousemove', (e) => {
+            if (window.innerWidth > 1024) {
+                const xAxis = (window.innerWidth / 2 - e.pageX) / 50;
+                const yAxis = (window.innerHeight / 2 - e.pageY) / 50;
+                card.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+            }
+        });
+
+        document.addEventListener('mouseleave', () => {
+            card.style.transform = `rotateY(0deg) rotateX(0deg)`;
+        });
+    </script>
+</body>
+
+</html>
