@@ -13,6 +13,7 @@ import ProfilePage from './features/auth/ProfilePage.jsx';
 import EditProfilePage from './features/auth/EditProfilePage.jsx';
 import EditTripPage from './features/trips/EditTripPage.jsx';
 
+import { LanguageProvider } from './context/LanguageContext.jsx';
 import MainLayout from './components/layout/MainLayout.jsx';
 
 function ProtectedRoute({ children }) {
@@ -25,8 +26,9 @@ function ProtectedRoute({ children }) {
 export default function App() {
   return (
     <AuthProvider>
-      <TripProvider>
-        <Router>
+      <LanguageProvider>
+        <TripProvider>
+          <Router>
           <Routes>
             {/* Public Routes */}
             <Route path="/login" element={<LoginPage />} />
@@ -97,6 +99,7 @@ export default function App() {
           </Routes>
         </Router>
       </TripProvider>
+      </LanguageProvider>
     </AuthProvider>
   );
 }

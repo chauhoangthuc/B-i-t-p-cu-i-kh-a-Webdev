@@ -3,11 +3,13 @@ import { postgrest } from '../../lib/postgrest.js';
 import { db } from '../../lib/db.js';
 import { useTrip } from '../../context/TripContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 import axios from 'axios';
 
 export default function ExpensesPage() {
   const { currentTripId } = useTrip();
   const { currentUser } = useAuth();
+  const { t } = useLanguage();
 
   const [expenses, setExpenses] = useState([]);
   const [members, setMembers] = useState([]);
@@ -184,9 +186,9 @@ export default function ExpensesPage() {
         <div className="w-16 h-16 bg-[#e8def8] rounded-full flex items-center justify-center mb-4">
           <span className="material-symbols-outlined text-[32px] text-[#6750a4]">receipt_long</span>
         </div>
-        <h2 className="text-xl font-bold text-[#191c1d] mb-2">Chưa chọn chuyến đi</h2>
+        <h2 className="text-xl font-bold text-[#191c1d] mb-2">{t('not_selected_trip')}</h2>
         <p className="text-sm text-gray-500 mb-6 max-w-sm">
-          Vui lòng tạo một chuyến đi mới hoặc chọn một chuyến đi có sẵn ở thanh tiêu đề phía trên để bắt đầu quản lý chi tiêu.
+          {t('not_selected_trip_desc')}
         </p>
       </div>
     );
@@ -196,15 +198,15 @@ export default function ExpensesPage() {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
       {/* Left Columns - Form & List */}
       <div className="lg:col-span-2 space-y-6">
-        <h1 className="text-2xl font-bold text-[#191c1d]">Quản lý Chi tiêu</h1>
+        <h1 className="text-2xl font-bold text-[#191c1d]">{t('expenses_title')}</h1>
 
         {/* Create Expense Form */}
         <form onSubmit={handleAddExpense} className="bg-white border border-[#c2c6d6] rounded-xl p-5 shadow-sm space-y-4">
-          <h2 className="text-lg font-bold">Thêm khoản chi tiêu mới</h2>
+          <h2 className="text-lg font-bold"> {t('add_expense_title')}</h2>
           
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-medium">Số tiền chi</label>
+              <label className="text-xs font-medium">{t('amount')}</label>
               <input
                 className="w-full h-11 px-3 border border-[#c2c6d6] rounded-lg"
                 required
@@ -214,7 +216,7 @@ export default function ExpensesPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium">Đơn vị tiền tệ</label>
+              <label className="text-xs font-medium">{t('currency')}</label>
               <select
                 className="w-full h-11 px-3 border border-[#c2c6d6] rounded-lg"
                 value={currency}
@@ -239,7 +241,7 @@ export default function ExpensesPage() {
 
           {currency !== 'VND' && (
             <div>
-              <label className="text-xs font-medium">Tỷ giá quy đổi (sang VND)</label>
+              <label className="text-xs font-medium">{t('exchange_rate')}</label>
               <input
                 className="w-full h-11 px-3 border border-[#c2c6d6] rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed font-semibold"
                 required
@@ -254,22 +256,22 @@ export default function ExpensesPage() {
           )}
 
           <div>
-            <label className="text-xs font-medium">Phân loại chi tiêu</label>
+            <label className="text-xs font-medium">{t('category')}</label>
             <select
               className="w-full h-11 px-3 border border-[#c2c6d6] rounded-lg"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
             >
-              <option value="food">Ăn uống 🍔</option>
-              <option value="transport">Di chuyển 🚗</option>
-              <option value="accommodation">Lưu trú 🏨</option>
-              <option value="ticket">Vé tham quan 🎟️</option>
-              <option value="other">Khác ⚙️</option>
+              <option value="food">{t('category_food')}</option>
+              <option value="transport">{t('category_transport')}</option>
+              <option value="accommodation">{t('category_accommodation')}</option>
+              <option value="ticket">{t('category_ticket')}</option>
+              <option value="other">{t('category_other')}</option>
             </select>
           </div>
 
           <div>
-            <label className="text-xs font-medium">Mô tả / Nội dung chi</label>
+            <label className="text-xs font-medium">{t('description')}</label>
             <input
               className="w-full h-11 px-3 border border-[#c2c6d6] rounded-lg"
               placeholder="Ví dụ: Vé máy bay Hà Nội - TP.HCM hoặc Ăn trưa tại nhà hàng"
@@ -282,13 +284,13 @@ export default function ExpensesPage() {
 
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="text-xs font-medium">Phân chia chi phí cho các thành viên</label>
+              <label className="text-xs font-medium">{t('split_expense')}</label>
               <button 
                 type="button" 
                 onClick={handleAutoSplit}
                 className="text-xs text-[#0058be] font-bold hover:underline"
               >
-                Chia đều cho tất cả
+                {t('split_all')}
               </button>
             </div>
              <div className="space-y-2 border border-[#edeeef] p-3 rounded-lg max-h-[150px] overflow-y-auto">
@@ -320,7 +322,7 @@ export default function ExpensesPage() {
             type="submit"
             className="w-full h-11 bg-gradient-to-r from-[#0058be] to-[#2170e4] text-white rounded-lg font-semibold"
           >
-            Thêm chi tiêu
+            {t('add_expense_btn')}
           </button>
         </form>
 
@@ -360,13 +362,13 @@ export default function ExpensesPage() {
 
       {/* Right Column - Settlement Board */}
       <div className="space-y-6">
-        <h2 className="text-xl font-bold text-[#191c1d]">Quyết toán & Phân nợ</h2>
+        <h2 className="text-xl font-bold text-[#191c1d]">{t('settlement_title')}</h2>
 
         <div className="bg-white border border-[#c2c6d6] rounded-xl p-5 shadow-sm space-y-4">
-          <h3 className="text-sm font-bold border-b border-[#edeeef] pb-2">Rút gọn số giao dịch (simplifyDebts)</h3>
+          <h3 className="text-sm font-bold border-b border-[#edeeef] pb-2">{t('simplify_debts')}</h3>
           
           {settlements.length === 0 ? (
-            <div className="text-xs text-[#727785] text-center py-4">Chưa có giao dịch quyết toán nào.</div>
+            <div className="text-xs text-[#727785] text-center py-4">{t('no_settlements')}</div>
           ) : (
             <div className="space-y-3">
               {settlements.map((s, idx) => (

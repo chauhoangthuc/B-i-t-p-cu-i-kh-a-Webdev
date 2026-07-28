@@ -3,8 +3,11 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar.jsx';
 
+import { useLanguage } from '../../context/LanguageContext.jsx';
+
 export default function ProfilePage() {
   const { currentUser } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   return (
@@ -12,15 +15,15 @@ export default function ProfilePage() {
         {/* Page Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-[#191c1d]">Hồ sơ của bạn</h1>
-            <p className="text-sm text-[#424754] mt-1">Quản lý thông tin cá nhân và thiết lập tài khoản TripManager của bạn.</p>
+            <h1 className="text-3xl font-bold text-[#191c1d]">{t('profile_title')}</h1>
+            <p className="text-sm text-[#424754] mt-1">{t('profile_desc')}</p>
           </div>
           <button
             onClick={() => navigate('/edit-profile')}
             className="flex items-center gap-2 px-4 py-2 bg-[#0058be] text-white rounded-lg hover:brightness-105 transition-all shadow-sm font-semibold"
           >
             <span className="material-symbols-outlined">edit</span>
-            <span className="text-sm">Chỉnh sửa hồ sơ</span>
+            <span className="text-sm">{t('edit_profile_btn')}</span>
           </button>
         </div>
 
@@ -39,7 +42,7 @@ export default function ProfilePage() {
             <h2 className="text-xl font-bold text-[#191c1d]">{currentUser?.name || 'Chưa đặt tên'}</h2>
             <p className="text-sm text-[#424754]">{currentUser?.email}</p>
             <div className="mt-4 px-3 py-1 bg-[#d5e0f8] text-[#0058be] rounded-full text-xs font-semibold uppercase tracking-wider">
-              Thành viên chính thức
+              {t('official_member')}
             </div>
           </div>
 
@@ -47,19 +50,19 @@ export default function ProfilePage() {
           <div className="md:col-span-8 bg-white border border-[#c2c6d6] p-6 rounded-xl shadow-sm space-y-4">
             <div className="flex items-center gap-2 mb-2">
               <span className="material-symbols-outlined text-[#0058be]">person_outline</span>
-              <h3 className="text-lg font-bold text-[#191c1d]">Thông tin cá nhân</h3>
+              <h3 className="text-lg font-bold text-[#191c1d]">{t('personal_info')}</h3>
             </div>
             <div className="space-y-4">
               <div className="flex justify-between pb-3 border-b border-[#edeeef] text-sm">
-                <span className="font-medium text-[#424754]">Họ và tên</span>
+                <span className="font-medium text-[#424754]">{t('full_name')}</span>
                 <span className="text-[#191c1d]">{currentUser?.name || 'N/A'}</span>
               </div>
               <div className="flex justify-between pb-3 border-b border-[#edeeef] text-sm">
-                <span className="font-medium text-[#424754]">Số điện thoại</span>
+                <span className="font-medium text-[#424754]">{t('phone')}</span>
                 <span className="text-[#191c1d]">{currentUser?.phone || 'Chưa cập nhật'}</span>
               </div>
               <div className="flex justify-between pb-3 border-b border-[#edeeef] text-sm">
-                <span className="font-medium text-[#424754]">Email liên hệ</span>
+                <span className="font-medium text-[#424754]">{t('email')}</span>
                 <span className="text-[#191c1d]">{currentUser?.email}</span>
               </div>
             </div>

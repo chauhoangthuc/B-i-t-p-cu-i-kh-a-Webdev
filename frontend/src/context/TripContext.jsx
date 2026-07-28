@@ -10,6 +10,38 @@ export function TripProvider({ children }) {
   const [currentTripRole, setCurrentTripRole] = useState(null);
   const [currentTrip, setCurrentTrip] = useState(null);
 
+  // Auto-select trip on login/switch account
+  useEffect(() => {
+    if (!currentUser) {
+      setCurrentTripId(null);
+      return;
+    }
+
+    const verifyAndAutoSelect = async () => {
+      try {
+        if (currentTripId) {
+          const res = await postgrest.get(`/trip_members?trip_id=eq.${currentTripId}&user_id=eq.${currentUser.id}`);
+          if (res.data && res.data.length > 0) {
+            // currentTripId is valid for the new user, do nothing
+            return;
+          }
+        }
+        
+        // Fetch first trip for this user and auto select it
+        const tripsRes = await postgrest.get('/trips?limit=1');
+        if (tripsRes.data && tripsRes.data.length > 0) {
+          setCurrentTripId(tripsRes.data[0].id);
+        } else {
+          setCurrentTripId(null);
+        }
+      } catch (err) {
+        console.error('Error verifying active trip:', err);
+      }
+    };
+
+    verifyAndAutoSelect();
+  }, [currentUser]);
+
   useEffect(() => {
     if (currentTripId) {
       localStorage.setItem('currentTripId', currentTripId);

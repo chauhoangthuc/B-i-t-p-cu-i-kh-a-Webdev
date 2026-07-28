@@ -4,10 +4,12 @@ import { useTrip } from '../../context/TripContext.jsx';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { postgrest } from '../../lib/postgrest.js';
 import Dropdown from '../common/Dropdown.jsx';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 
 export default function TopBar({ tripName }) {
   const { currentUser, logout } = useAuth();
   const { currentTripRole, currentTrip, setCurrentTripId } = useTrip();
+  const { language, setLanguage, t } = useLanguage();
   const navigate = useNavigate();
 
   const location = useLocation();
@@ -55,7 +57,7 @@ export default function TopBar({ tripName }) {
           className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#f3f4f5] hover:bg-[#e7e8e9] transition-colors border border-[#c2c6d6]"
         >
           <span className="material-symbols-outlined text-[#0058be] text-[20px]">location_on</span>
-          <span className="text-xs font-bold text-[#191c1d]">{tripName || currentTrip?.name || "Chọn chuyến đi..."}</span>
+          <span className="text-xs font-bold text-[#191c1d]">{tripName || currentTrip?.name || t('choose_trip')}</span>
           <span className="material-symbols-outlined text-[18px]">keyboard_arrow_down</span>
         </button>
 
@@ -63,7 +65,7 @@ export default function TopBar({ tripName }) {
         <div className="relative flex items-center group">
           <input 
             className="pl-10 pr-4 py-1.5 rounded-lg bg-[#f3f4f5] border-transparent focus:border-[#0058be] focus:ring-0 focus:bg-white w-48 focus:w-64 transition-all duration-300 text-sm" 
-            placeholder="Tìm kiếm chuyến đi..." 
+            placeholder={t('search_placeholder')} 
             type="text" 
             value={searchTerm}
             onChange={(e) => {
@@ -117,11 +119,31 @@ export default function TopBar({ tripName }) {
       </div>
 
       <div className="flex items-center gap-4">
-        {/* Lang & Notif */}
-        <button className="px-3 py-1.5 rounded-lg hover:bg-[#f3f4f5] transition-colors flex items-center gap-1 text-xs font-bold">
-          <span>VI</span>
-          <span className="material-symbols-outlined text-[16px]">translate</span>
-        </button>
+        {/* Lang Selector Dropdown */}
+        <Dropdown 
+          trigger={
+            <button className="px-3 py-1.5 rounded-lg hover:bg-[#f3f4f5] transition-colors flex items-center gap-1 text-xs font-bold">
+              <span>{language.toUpperCase()}</span>
+              <span className="material-symbols-outlined text-[16px]">translate</span>
+            </button>
+          }
+        >
+          <button 
+            onClick={() => setLanguage('vi')} 
+            className={`w-full text-left px-3 py-2 text-xs font-medium hover:bg-[#f3f4f5] flex items-center justify-between ${language === 'vi' ? 'text-[#0058be] font-bold' : ''}`}
+          >
+            <span>Tiếng Việt (VI)</span>
+            {language === 'vi' && <span className="material-symbols-outlined text-[14px]">check</span>}
+          </button>
+          <button 
+            onClick={() => setLanguage('en')} 
+            className={`w-full text-left px-3 py-2 text-xs font-medium hover:bg-[#f3f4f5] flex items-center justify-between ${language === 'en' ? 'text-[#0058be] font-bold' : ''}`}
+          >
+            <span>English (EN)</span>
+            {language === 'en' && <span className="material-symbols-outlined text-[14px]">check</span>}
+          </button>
+        </Dropdown>
+
         <button className="relative p-2 rounded-full hover:bg-[#f3f4f5] transition-colors">
           <span className="material-symbols-outlined text-[24px]">notifications</span>
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#ba1a1a] rounded-full border-2 border-white"></span>
@@ -148,21 +170,21 @@ export default function TopBar({ tripName }) {
             className="w-full text-left px-3 py-2 text-xs font-medium hover:bg-[#f3f4f5] flex items-center gap-2"
           >
             <span className="material-symbols-outlined text-[18px]">person</span>
-            <span>Hồ sơ</span>
+            <span>{t('dropdown_profile')}</span>
           </button>
           <button 
             onClick={() => navigate('/edit-profile')} 
             className="w-full text-left px-3 py-2 text-xs font-medium hover:bg-[#f3f4f5] flex items-center gap-2"
           >
             <span className="material-symbols-outlined text-[18px]">settings</span>
-            <span>Chỉnh sửa</span>
+            <span>{t('dropdown_edit')}</span>
           </button>
           <button 
             onClick={logout} 
             className="w-full text-left px-3 py-2 text-xs font-medium hover:bg-red-50 text-red-600 flex items-center gap-2"
           >
             <span className="material-symbols-outlined text-[18px]">logout</span>
-            <span>Đăng xuất</span>
+            <span>{t('dropdown_logout')}</span>
           </button>
         </Dropdown>
       </div>

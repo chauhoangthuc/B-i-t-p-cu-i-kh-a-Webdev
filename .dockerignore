@@ -1,0 +1,13 @@
+node_modules
+**/node_modules
+postgres_data
+minio_data
+.git
+.github
+.vscode
+.agents
+.gemini
+*.env
+.env
+**/dist
+dist

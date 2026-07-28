@@ -2,17 +2,19 @@ import React from 'react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { Link, useLocation } from 'react-router-dom';
 import logoImg from '../../assets/images/logo.png';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 
 export default function Sidebar() {
   const { currentUser, logout } = useAuth();
+  const { t } = useLanguage();
   const location = useLocation();
 
   const menuItems = [
-    { path: '/dashboard', name: 'Dashboard', icon: 'dashboard' },
-    { path: '/trips', name: 'Trips', icon: 'flight_takeoff' },
-    { path: '/calendar', name: 'Calendar', icon: 'calendar_month' },
-    { path: '/expenses', name: 'Expenses', icon: 'payments' },
-    { path: '/profile', name: 'Profile', icon: 'person' }
+    { path: '/dashboard', name: t('menu_dashboard'), icon: 'dashboard' },
+    { path: '/trips', name: t('menu_trips'), icon: 'flight_takeoff' },
+    { path: '/calendar', name: t('menu_calendar'), icon: 'calendar_month' },
+    { path: '/expenses', name: t('menu_expenses'), icon: 'payments' },
+    { path: '/profile', name: t('menu_profile'), icon: 'person' }
   ];
 
   return (
@@ -80,7 +82,7 @@ export default function Sidebar() {
         >
           <span className="material-symbols-outlined shrink-0">logout</span>
           <span className="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-xs font-semibold">
-            Logout
+            {t('dropdown_logout')}
           </span>
         </button>
       </div>
