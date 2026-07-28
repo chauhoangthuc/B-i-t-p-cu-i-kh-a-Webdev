@@ -61,6 +61,9 @@ export default function LoginPage() {
         }
       });
       if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
     } catch (err) {
       triggerToast('Đăng nhập Google thất bại: ' + err.message);
     }
