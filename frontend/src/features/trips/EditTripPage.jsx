@@ -23,6 +23,13 @@ const COVER_PRESETS = [
   }
 ];
 
+// ─── Token generator ───────────────────────────────────────────────────────────
+function generateInviteToken() {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return Array.from(array, b => b.toString(16).padStart(2, '0')).join('');
+}
+
 export default function EditTripPage() {
   const { tripId } = useParams();
   const { currentUser } = useAuth();
@@ -42,45 +49,52 @@ export default function EditTripPage() {
   const [isPublic, setIsPublic] = useState(false);
   const [notifications, setNotifications] = useState(true);
 
-  // Members list
+  // Members & Invitations lists
   const [members, setMembers] = useState([]);
+  const [invitations, setInvitations] = useState([]);
   const [newMemberEmail, setNewMemberEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState('member');
   const [addMemberLoading, setAddMemberLoading] = useState(false);
+  const [toast, setToast] = useState(null); // { type: 'success'|'error', msg }
 
   // Delete trip modal
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  // Load trip info
-  useEffect(() => {
-    if (!tripId) return;
-
-    const loadTripData = async () => {
-      try {
-        setLoading(true);
-        // 1. Fetch trip metadata
-        const tripRes = await postgrest.get(`/trips?id=eq.${tripId}`);
-        if (tripRes.data && tripRes.data.length > 0) {
-          const t = tripRes.data[0];
-          setName(t.name);
-          setDestination(t.destination || '');
-          setDescription(t.description || '');
-          setStartDate(t.start_date);
-          setEndDate(t.end_date);
-          setSelectedImage(t.image_url || COVER_PRESETS[0].url);
-        }
-
-        // 2. Fetch members
-        const membersRes = await postgrest.get(`/trip_members?trip_id=eq.${tripId}&select=*,profiles(*)`);
-        setMembers(membersRes.data || []);
-      } catch (err) {
-        console.error('Failed to load trip detail:', err);
-      } finally {
-        setLoading(false);
+  // Load trip info, members and invitations
+  const loadTripData = async () => {
+    try {
+      setLoading(true);
+      // 1. Fetch trip metadata
+      const tripRes = await postgrest.get(`/trips?id=eq.${tripId}`);
+      if (tripRes.data && tripRes.data.length > 0) {
+        const t = tripRes.data[0];
+        setName(t.name);
+        setDestination(t.destination || '');
+        setDescription(t.description || '');
+        setStartDate(t.start_date);
+        setEndDate(t.end_date);
+        setSelectedImage(t.image_url || COVER_PRESETS[0].url);
       }
-    };
 
-    loadTripData();
+      // 2. Fetch members
+      const membersRes = await postgrest.get(`/trip_members?trip_id=eq.${tripId}&select=*,profiles(*)`);
+      setMembers(membersRes.data || []);
+
+      // 3. Fetch invitations
+      const invsRes = await postgrest.get(`/trip_invitations?trip_id=eq.${tripId}&select=*&order=created_at.desc`);
+      setInvitations(invsRes.data || []);
+    } catch (err) {
+      console.error('Failed to load trip detail:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (tripId) {
+      loadTripData();
+    }
   }, [tripId]);
 
   // Update trip info
@@ -124,42 +138,64 @@ export default function EditTripPage() {
     reader.readAsDataURL(file);
   };
 
-  // Add new member
+  // Add new member (Invite via Email)
   const handleAddMember = async (e) => {
     e.preventDefault();
     if (!newMemberEmail.trim()) return;
 
     setAddMemberLoading(true);
+    setToast(null);
+
+    const normalizedEmail = newMemberEmail.trim().toLowerCase();
+
+    // Check if already a member
+    if (members.some(m => m.profiles?.email?.toLowerCase() === normalizedEmail)) {
+      setToast({ type: 'error', msg: 'Người này đã là thành viên của chuyến đi.' });
+      setAddMemberLoading(false);
+      return;
+    }
+
+    // Check if pending invitation exists
+    if (invitations.some(i => i.invited_email.toLowerCase() === normalizedEmail && i.status === 'pending')) {
+      setToast({ type: 'error', msg: 'Đã gửi lời mời tới email này, đang chờ phản hồi.' });
+      setAddMemberLoading(false);
+      return;
+    }
+
     try {
-      // Find profile by email
-      const res = await postgrest.get(`/profiles?email=eq.${newMemberEmail.trim().toLowerCase()}`);
-      if (!res.data || res.data.length === 0) {
-        alert('Không tìm thấy tài khoản người dùng với email này!');
-        return;
-      }
+      const token = generateInviteToken();
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
-      const targetProfile = res.data[0];
-
-      // Check if already member
-      const isExist = members.some(m => m.user_id === targetProfile.id);
-      if (isExist) {
-        alert('Người dùng này đã tham gia chuyến đi!');
-        return;
-      }
-
-      // Add member record
-      await postgrest.post('/trip_members', {
+      // 1. Create invitation record (PostgREST)
+      await postgrest.post('/trip_invitations', {
         trip_id: tripId,
-        user_id: targetProfile.id,
-        role: 'member'
+        invited_email: normalizedEmail,
+        invited_by: currentUser.id,
+        role: inviteRole,
+        token,
+        expires_at: expiresAt,
       });
 
-      // Reload members list
-      const membersRes = await postgrest.get(`/trip_members?trip_id=eq.${tripId}&select=*,profiles(*)`);
-      setMembers(membersRes.data || []);
+      // 2. Send email via Jobs Service (fire-and-forget)
+      fetch('/jobs/api/invitations/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: normalizedEmail,
+          inviterName: currentUser.name || 'Ai đó',
+          tripName: name,
+          inviteLink: `${window.location.origin}/invite/${token}`,
+        }),
+      }).catch(err => console.warn('Email endpoint unreachable (non-blocking):', err.message));
+
+      setToast({ type: 'success', msg: `Đã gửi lời mời tới ${normalizedEmail}!` });
       setNewMemberEmail('');
+      
+      // Reload invitations list
+      const invsRes = await postgrest.get(`/trip_invitations?trip_id=eq.${tripId}&select=*&order=created_at.desc`);
+      setInvitations(invsRes.data || []);
     } catch (err) {
-      alert('Lỗi thêm thành viên: ' + err.message);
+      setToast({ type: 'error', msg: 'Lỗi gửi lời mời: ' + err.message });
     } finally {
       setAddMemberLoading(false);
     }
@@ -182,11 +218,7 @@ export default function EditTripPage() {
     setDeleteLoading(true);
     try {
       await postgrest.delete(`/trips?id=eq.${tripId}`);
-      
-      // Clear active trip ID if deleting current trip
-      setCurrentTripId(null);
-      
-      alert('Xóa chuyến đi thành công!');
+      alert('Đã xóa chuyến đi thành công!');
       navigate('/trips');
     } catch (err) {
       alert('Lỗi xóa chuyến đi: ' + err.message);
@@ -196,180 +228,170 @@ export default function EditTripPage() {
     }
   };
 
+  const statusConfig = {
+    pending:  { cls: 'text-amber-700 bg-amber-50 border border-amber-200', label: 'Đang chờ' },
+    accepted: { cls: 'text-green-700 bg-green-50 border border-green-200',  label: 'Đã nhận' },
+    declined: { cls: 'text-red-700 bg-red-50 border border-red-200',        label: 'Từ chối' },
+    expired:  { cls: 'text-gray-500 bg-gray-50 border border-gray-200',     label: 'Hết hạn' },
+  };
+
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh] text-[#727785] text-sm">
-        Đang tải thông tin chuyến đi...
-      </div>
-    );
+    return <div className="text-center py-16 text-sm text-[#727785]">Đang tải thông tin chuyến đi...</div>;
   }
 
   return (
-    <div className="space-y-6">
-      
-      {/* 1. Header Area */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate('/trips')}
-            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-100 border border-[#c2c6d6] transition-all"
-          >
-            <span className="material-symbols-outlined text-[#424754]">arrow_back</span>
-          </button>
-          <h1 className="text-xl font-bold text-[#191c1d]">Chỉnh sửa chuyến đi</h1>
+    <div className="space-y-6 max-w-5xl mx-auto pb-12">
+      {/* Header */}
+      <div className="flex justify-between items-center border-b border-[#c2c6d6] pb-4">
+        <div>
+          <h1 className="text-2xl font-black text-[#191c1d]">Chỉnh sửa chuyến đi</h1>
+          <p className="text-xs text-[#727785]">Thiết lập cài đặt và quản lý thành viên cho hành trình</p>
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => navigate('/trips')}
-            className="px-4 py-2 border border-[#c2c6d6] text-xs font-bold text-[#424754] rounded-xl hover:bg-gray-50 transition-all"
-          >
-            Hủy
-          </button>
-          <button
-            type="button"
-            onClick={handleSaveChanges}
-            disabled={saveLoading}
-            className="px-4 py-2 bg-[#0058be] text-white hover:bg-[#2170e4] text-xs font-bold rounded-xl shadow-md transition-all"
-          >
-            {saveLoading ? 'Đang lưu...' : 'Lưu thay đổi'}
-          </button>
-        </div>
+        <button 
+          onClick={() => navigate('/trips')}
+          className="text-xs font-bold text-[#424754] border border-[#c2c6d6] bg-white hover:bg-gray-50 px-4 py-2 rounded-xl transition-all"
+        >
+          Quay lại
+        </button>
       </div>
 
-      {/* 2. Main Bento Layout Grid */}
+      {/* Main layout: 2 Columns */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         
-        {/* Left Columns: Basic info and cover photo (2/3 width) */}
-        <div className="lg:col-span-2 space-y-6">
-          
-          {/* Card: Thông tin cơ bản */}
+        {/* Left Column: Form Info (2/3 width) */}
+        <form onSubmit={handleSaveChanges} className="lg:col-span-2 space-y-6">
           <div className="bg-white border border-[#c2c6d6] rounded-2xl p-6 shadow-sm space-y-4">
-            <h3 className="text-sm font-bold text-[#191c1d] flex items-center gap-1.5 border-b border-[#f0f1f2] pb-3">
-              <span className="material-symbols-outlined text-[#0058be] text-[18px]">info</span>
-              Thông tin cơ bản
-            </h3>
-
+            <h3 className="text-sm font-bold text-[#191c1d] border-b border-[#f0f1f2] pb-3">Thông tin cơ bản</h3>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-[#424754]">Tên chuyến đi *</label>
-                <input
-                  type="text"
+                <input 
+                  type="text" 
                   required
-                  className="w-full h-11 px-3 border border-[#c2c6d6] rounded-xl text-sm focus:ring-2 focus:ring-[#0058be]/20 focus:border-[#0058be] outline-none"
+                  className="w-full h-11 px-3 border border-[#c2c6d6] rounded-xl text-sm outline-none focus:border-[#0058be]"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
               </div>
-
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-[#424754]">Điểm đến *</label>
-                <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#727785] text-[18px]">location_on</span>
-                  <input
-                    type="text"
-                    required
-                    className="w-full h-11 pl-9 pr-3 border border-[#c2c6d6] rounded-xl text-sm focus:ring-2 focus:ring-[#0058be]/20 focus:border-[#0058be] outline-none"
-                    value={destination}
-                    onChange={(e) => setDestination(e.target.value)}
-                  />
-                </div>
+                <input 
+                  type="text" 
+                  required
+                  className="w-full h-11 px-3 border border-[#c2c6d6] rounded-xl text-sm outline-none focus:border-[#0058be]"
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                />
               </div>
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#424754]">Ngày khởi hành</label>
-                <input
-                  type="date"
+                <label className="text-xs font-semibold text-[#424754]">Ngày khởi hành *</label>
+                <input 
+                  type="date" 
                   required
                   className="w-full h-11 px-3 border border-[#c2c6d6] rounded-xl text-sm outline-none"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                 />
               </div>
-
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#424754]">Ngày kết thúc</label>
-                <input
-                  type="date"
+                <label className="text-xs font-semibold text-[#424754]">Ngày kết thúc *</label>
+                <input 
+                  type="date" 
                   required
                   className="w-full h-11 px-3 border border-[#c2c6d6] rounded-xl text-sm outline-none"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                 />
               </div>
-
-              <div className="col-span-full space-y-1">
-                <label className="text-xs font-semibold text-[#424754]">Mô tả chuyến đi</label>
-                <textarea
-                  rows={3}
-                  className="w-full p-3 border border-[#c2c6d6] rounded-xl text-sm focus:ring-2 focus:ring-[#0058be]/20 focus:border-[#0058be] outline-none"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-              </div>
             </div>
-          </div>
 
-          {/* Card: Ảnh bìa chuyến đi */}
-          <div className="bg-white border border-[#c2c6d6] rounded-2xl p-6 shadow-sm space-y-4">
-            <div className="flex justify-between items-center border-b border-[#f0f1f2] pb-3">
-              <h3 className="text-sm font-bold text-[#191c1d] flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[#0058be] text-[18px]">image</span>
-                Ảnh bìa chuyến đi
-              </h3>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="text-xs font-bold text-[#0058be] hover:underline flex items-center gap-0.5"
-              >
-                <span className="material-symbols-outlined text-[14px]">upload</span>
-                Tải lên ảnh mới
-              </button>
-              <input 
-                type="file"
-                ref={fileInputRef}
-                accept="image/*"
-                onChange={handleCustomImageUpload}
-                className="hidden"
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-[#424754]">Mô tả chuyến đi</label>
+              <textarea 
+                className="w-full p-3 border border-[#c2c6d6] rounded-xl text-sm outline-none focus:border-[#0058be]"
+                rows={3}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
               />
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {COVER_PRESETS.map((preset, idx) => {
-                const isSelected = selectedImage === preset.url;
-                return (
-                  <div 
-                    key={idx}
-                    onClick={() => setSelectedImage(preset.url)}
-                    className={`relative aspect-video rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${
-                      isSelected ? 'border-[#0058be] scale-95 shadow-sm' : 'border-transparent hover:border-gray-300'
-                    }`}
-                  >
-                    <img src={preset.url} alt={preset.name} className="w-full h-full object-cover" />
-                    {isSelected && (
-                      <div className="absolute inset-0 bg-[#0058be]/10 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-white bg-[#0058be] rounded-full p-0.5 text-xs">check</span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+            {/* Custom Cover Gallery presets */}
+            <div className="space-y-2 pt-2">
+              <div className="flex justify-between items-center">
+                <label className="text-xs font-semibold text-[#424754]">Hình nền hành trình</label>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-xs font-bold text-[#0058be] hover:underline flex items-center gap-0.5"
+                >
+                  <span className="material-symbols-outlined text-[14px]">upload</span>
+                  Tải ảnh mới
+                </button>
+                <input 
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*"
+                  onChange={handleCustomImageUpload}
+                  className="hidden"
+                />
+              </div>
+
+              <div className="grid grid-cols-4 gap-2">
+                {COVER_PRESETS.map((preset, idx) => {
+                  const isSelected = selectedImage === preset.url;
+                  return (
+                    <div 
+                      key={idx}
+                      onClick={() => setSelectedImage(preset.url)}
+                      className={`relative aspect-video rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${
+                        isSelected ? 'border-[#0058be] scale-95 shadow-sm' : 'border-transparent hover:border-gray-300'
+                      }`}
+                    >
+                      <img src={preset.url} alt={preset.name} className="w-full h-full object-cover" />
+                      {isSelected && (
+                        <div className="absolute inset-0 bg-[#0058be]/10 flex items-center justify-center">
+                          <span className="material-symbols-outlined text-white bg-[#0058be] rounded-full p-0.5 text-xs">check</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
+
+            {/* Action buttons */}
+            <div className="flex justify-end gap-3 pt-4 border-t border-[#f0f1f2]">
+              <button
+                type="button"
+                onClick={() => navigate('/trips')}
+                className="px-5 py-2.5 border border-[#c2c6d6] text-[#424754] text-xs font-bold rounded-xl hover:bg-gray-50 transition-all"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="submit"
+                disabled={saveLoading}
+                className="px-5 py-2.5 bg-[#0058be] hover:bg-[#2170e4] text-white text-xs font-bold rounded-xl transition-all shadow-md"
+              >
+                {saveLoading ? 'Đang lưu...' : 'Lưu cài đặt'}
+              </button>
+            </div>
+
           </div>
+        </form>
 
-        </div>
-
-        {/* Right Columns: Settings and Members list (1/3 width) */}
+        {/* Right Column: Members & Settings (1/3 width) */}
         <div className="space-y-6">
           
-          {/* Card: Thiết lập */}
+          {/* Card: Cài đặt nâng cao */}
           <div className="bg-white border border-[#c2c6d6] rounded-2xl p-6 shadow-sm space-y-4">
-            <h3 className="text-sm font-bold text-[#191c1d] flex items-center gap-1.5 border-b border-[#f0f1f2] pb-3">
-              <span className="material-symbols-outlined text-[#0058be] text-[18px]">settings</span>
-              Thiết lập
-            </h3>
-
-            <div className="space-y-4">
+            <h3 className="text-sm font-bold text-[#191c1d] border-b border-[#f0f1f2] pb-3">Cài đặt nâng cao</h3>
+            
+            <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <div>
                   <span className="text-xs font-bold text-[#191c1d] block">Công khai chuyến đi</span>
@@ -415,45 +437,78 @@ export default function EditTripPage() {
             </div>
           </div>
 
-          {/* Card: Thành viên */}
+          {/* Card: Thành viên & Lời mời */}
           <div className="bg-white border border-[#c2c6d6] rounded-2xl p-6 shadow-sm space-y-4">
             <h3 className="text-sm font-bold text-[#191c1d] flex items-center gap-1.5 border-b border-[#f0f1f2] pb-3">
               <span className="material-symbols-outlined text-[#0058be] text-[18px]">group</span>
               Thành viên ({members.length})
             </h3>
 
+            {/* Toast feedback */}
+            {toast && (
+              <div className={`text-[10px] px-3 py-2 rounded-xl flex items-center gap-1.5 ${
+                toast.type === 'success'
+                  ? 'bg-green-50 text-green-700 border border-green-200'
+                  : 'bg-red-50 text-red-700 border border-red-200'
+              }`}>
+                <span className="material-symbols-outlined text-[12px]">
+                  {toast.type === 'success' ? 'check_circle' : 'error'}
+                </span>
+                {toast.msg}
+              </div>
+            )}
+
             {/* Invite Form */}
-            <form onSubmit={handleAddMember} className="flex gap-2">
-              <input
-                type="email"
-                placeholder="Nhập email thành viên..."
-                required
-                className="flex-1 h-9 px-3 border border-[#c2c6d6] rounded-lg text-xs outline-none focus:border-[#0058be]"
-                value={newMemberEmail}
-                onChange={(e) => setNewMemberEmail(e.target.value)}
-              />
-              <button
-                type="submit"
-                disabled={addMemberLoading}
-                className="bg-[#0058be] hover:bg-[#2170e4] text-white text-xs font-bold px-3 py-1 rounded-lg transition-all"
-              >
-                + Mới
-              </button>
+            <form onSubmit={handleAddMember} className="space-y-2">
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  placeholder="Nhập email thành viên..."
+                  required
+                  className="flex-1 h-9 px-3 border border-[#c2c6d6] rounded-lg text-xs outline-none focus:border-[#0058be]"
+                  value={newMemberEmail}
+                  onChange={(e) => setNewMemberEmail(e.target.value)}
+                />
+                <button
+                  type="submit"
+                  disabled={addMemberLoading}
+                  className="bg-[#0058be] hover:bg-[#2170e4] text-white text-xs font-bold px-3 py-1 rounded-lg transition-all flex items-center justify-center shrink-0"
+                >
+                  {addMemberLoading ? '...' : '+ Mới'}
+                </button>
+              </div>
+              <div className="flex justify-between items-center text-[10px] text-[#727785] px-1">
+                <span>Vai trò đề xuất:</span>
+                <select 
+                  value={inviteRole} 
+                  onChange={e => setInviteRole(e.target.value)}
+                  className="bg-transparent border-none outline-none font-bold text-[#0058be] cursor-pointer"
+                >
+                  <option value="member">Thành viên</option>
+                  <option value="leader">Trưởng nhóm</option>
+                </select>
+              </div>
             </form>
 
             {/* Members List */}
-            <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+            <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1">
               {members.map(member => {
                 const isCreator = member.role === 'leader';
                 return (
                   <div key={member.user_id} className="flex items-center justify-between gap-2 p-2 border border-[#c2c6d6] rounded-xl bg-gray-50/50">
                     <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 text-[#0058be] flex items-center justify-center text-xs font-bold flex-shrink-0">
-                        {member.profiles?.name?.charAt(0) || 'U'}
+                      <div className="w-8 h-8 rounded-full bg-blue-100 text-[#0058be] flex items-center justify-center text-xs font-bold flex-shrink-0 overflow-hidden">
+                        {member.profiles?.avatar_url ? (
+                          <img src={member.profiles.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                        ) : (
+                          member.profiles?.name?.charAt(0) || 'U'
+                        )}
                       </div>
                       <div className="min-w-0">
                         <span className="text-xs font-bold text-[#191c1d] truncate block">{member.profiles?.name || 'Thành viên'}</span>
-                        <span className="text-[10px] text-[#727785] truncate block">{isCreator ? 'Chủ sở hữu' : 'Thành viên'}</span>
+                        <span className="text-[10px] text-[#727785] truncate block">
+                          {isCreator ? 'Trưởng nhóm' : 'Thành viên'}
+                        </span>
                       </div>
                     </div>
 
@@ -470,6 +525,26 @@ export default function EditTripPage() {
                 );
               })}
             </div>
+
+            {/* Pending Invitations list inside Sidebar Card */}
+            {invitations.length > 0 && (
+              <div className="pt-2 border-t border-[#f0f1f2] space-y-2">
+                <span className="text-[10px] font-bold text-[#727785] block uppercase tracking-wider">Lời mời đang chờ ({invitations.length})</span>
+                <div className="space-y-2 max-h-32 overflow-y-auto pr-1">
+                  {invitations.map(inv => {
+                    const cfg = statusConfig[inv.status] || statusConfig.pending;
+                    return (
+                      <div key={inv.id} className="flex items-center justify-between gap-1 p-2 border border-dashed border-[#c2c6d6] rounded-xl bg-gray-50/20 text-[10px]">
+                        <span className="font-medium text-[#191c1d] truncate flex-1 pr-1">{inv.invited_email}</span>
+                        <span className={`px-1.5 py-0.5 rounded-full font-bold flex-shrink-0 ${cfg.cls}`}>
+                          {cfg.label}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
         </div>

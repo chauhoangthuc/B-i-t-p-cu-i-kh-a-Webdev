@@ -9,6 +9,11 @@ export default defineConfig({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
       workbox: {
+        // Không chặn các path của GoTrue OAuth — để browser navigate thật ra ngoài
+        navigateFallbackDenylist: [
+          /^\/auth\//,       // /auth/v1/authorize, /auth/v1/callback...
+          /^\/callback/,     // /callback?code=...
+        ],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {

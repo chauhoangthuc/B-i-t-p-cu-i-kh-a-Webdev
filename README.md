@@ -45,6 +45,11 @@
   * Ghi chép chi tiêu có phân loại chi tiết (Ăn uống, Di chuyển, Lưu trú, Vé tham quan, Khác) giúp biểu đồ tròn tỷ lệ chi tiêu hiển thị chính xác.
   * Tự động khóa và quy đổi tỷ giá USD sang VND cố định (`26.335đ`) giúp loại bỏ hoàn toàn sai sót tính toán của người dùng.
   * Hỗ trợ tự động chia đều nợ (Auto split) hoặc chủ động chỉnh sửa chi tiết số tiền từng người gánh.
+* 📷 **Quét hóa đơn thông minh toàn cục (Global OCR Scanner):**
+  * Tích hợp trực tiếp trên thanh công cụ hệ thống (`TopBar`), dễ dàng kích hoạt từ bất kỳ trang nào.
+  * **Live Camera Scanner (Webcam):** Quét trực tiếp bằng camera trên thiết bị với giao diện mặt nạ cắt khung và tia laser quét động. Tự động chụp và chuyển đổi ảnh thành Base64.
+  * **Tải ảnh hóa đơn lên (File Upload Fallback):** Hỗ trợ chọn tệp ảnh PNG/JPG/WebP từ máy tính một cách độc lập thông qua biểu tượng hóa đơn (`receipt_long`) với cơ chế phát hiện định dạng ảnh (MIME type) tự động.
+  * **Trí tuệ nhân tạo (Gemini API Integration):** Kết xuất ảnh trực tiếp gửi lên API `gemini-2.5-flash` để phân tích và bóc tách dữ liệu tiếng Việt (Số tiền, Loại chi tiêu, Ngày giao dịch, Mô tả) thành một JSON thô chuẩn hóa, tự động điền (autofill) vào biểu mẫu thêm chi tiêu.
 * ⚖️ **Thuật toán quyết toán tối giản:** Sử dụng thuật toán rút gọn số giao dịch (`simplifyDebts`) giúp giảm tối thiểu số lượt chuyển khoản qua lại giữa các thành viên.
 * 👤 **Cập nhật hồ sơ & Đồng bộ Avatar:** Thay đổi ảnh đại diện cá nhân trực tiếp (Base64), tự động đồng bộ avatar lập tức lên tất cả thanh Sidebar, Header TopBar, và Trang cá nhân của ứng dụng.
 
@@ -52,6 +57,7 @@
 
 ## 💻 Công nghệ sử dụng
 * **Frontend:** React SPA (Vite), Tailwind CSS, dnd-kit (kéo thả sắp xếp), PWA (Service Worker + IndexedDB)
+* **Trí tuệ nhân tạo (AI Engine):** Google Gemini 1.5/2.5 Flash REST API (OCR & Data Parsing).
 * **Backend REST API:** PostgREST (Tạo REST API tự động trực tiếp từ Postgres CSDL)
 * **Dịch vụ xác thực (Auth):** Supabase GoTrue (Hỗ trợ xác thực Email/Password & Google OAuth)
 * **Jobs Service (Node.js/Express):** 
@@ -77,13 +83,14 @@ Dưới đây là bảng thống kê chi tiết các tính năng đã hoàn thi�
 | **Xác thực (Auth)** | Đăng nhập/Đăng ký qua Email & Password | 🟢 **Đã hoàn thành** | Chạy thông qua container GoTrue. |
 | | Đăng nhập bên thứ ba (Google OAuth) | 🟢 **Đã hoàn thành** | Đã cấu hình biến môi trường và Google API OAuth credentials. |
 | **Chuyến đi (Trips)** | CRUD chuyến đi, cài đặt tiền tệ gốc, múi giờ | 🟢 **Đã hoàn thành** | Lưu trữ đầy đủ thông tin chuyến đi. |
-| | Sắp xếp thứ tự các chuyến đi | 🟢 **Đã hoàn thành** | Kéo thả mượt mà bằng `@dnd-kit` đồng bộ thứ tự `order_index`. |
+| | Sắp xếp thứ tự các chuyến đi | 🟢 **Đã hoàn thành** | Kéo thả mượt mịt bằng `@dnd-kit` đồng bộ thứ tự `order_index`. |
 | **Lịch trình (Calendar)**| Hiển thị các chuyến đi trên Lưới lịch tháng | 🟢 **Đã hoàn thành** | Ánh xạ chính xác khoảng thời gian đi của các chuyến đi lên ô lịch. |
 | | Tô màu trực quan theo trạng thái | 🟢 **Đã hoàn thành** | **Vàng** (Đã đi qua), **Xanh lá** (Đang diễn ra), **Đỏ** (Sắp tới). |
 | | Bộ chọn ngày chuyển nhanh | 🟢 **Đã hoàn thành** | Thêm thanh chọn ngày nhảy trực tiếp tháng/năm. |
 | **Chi tiêu (Expenses)**| Thêm khoản chi, phân loại chi tiêu | 🟢 **Đã hoàn thành** | Hỗ trợ phân loại chi tiết (Ăn uống, Di chuyển, Lưu trú, Vé, Khác). |
 | | Tự động quy đổi ngoại tệ (USD) | 🟢 **Đã hoàn thành** | Cố định tỷ giá USD -> VND là `26.335` và khóa nhập lỗi từ người dùng. |
 | | Phân chia nợ & quyết toán nhóm | 🟢 **Đã hoàn thành** | Thuật toán `simplifyDebts` xử lý nợ tối giản tự động. |
+| **Nhận dạng hóa đơn (OCR)**| Quét hóa đơn qua Camera và phân tích AI | 🟢 **Đã hoàn thành** | Hỗ trợ cả **Live Camera Scanner** (có hiệu ứng tia laser) và **Tải file ảnh** độc lập gửi trực tiếp sang `gemini-2.5-flash` API. |
 | **Hồ sơ (Profile)** | Cập nhật hồ sơ, thay đổi ảnh đại diện | 🟢 **Đã hoàn thành** | Hỗ trợ upload ảnh Base64 đồng nhất avatar toàn bộ website. |
 | **Hệ thống ngầm** | Real-time WebSocket Updates | 🟢 **Đã hoàn thành** | Jobs Service lắng nghe `LISTEN/NOTIFY` từ Postgres đẩy về React. |
 | | Quản lý hóa đơn trên Object Storage | 🟡 **Chưa triển khai** | Hiện tại ảnh hóa đơn/ảnh đại diện đang được mã hóa **Base64** và lưu trữ trực tiếp vào CSDL thay vì lưu lên MinIO do hạn chế phần cứng khi chạy dev. |

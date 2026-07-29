@@ -9,19 +9,37 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Sync profile from public.users table
-  const fetchUserProfile = async (userId) => {
+  // Sync profile from public.profiles table, create if not exists (for OAuth users)
+  const fetchUserProfile = async (userId, userMeta) => {
     try {
       const res = await postgrest.get(`/profiles?id=eq.${userId}`);
       if (res.data && res.data.length > 0) {
         setCurrentUser(res.data[0]);
       } else {
-        console.warn('User profile not found in public.profiles. Logging out stale session...');
-        logout();
+        // New OAuth user: tạo profile mới
+        console.info('Creating new profile for OAuth user:', userId);
+        const fullName = userMeta?.full_name || userMeta?.name || '';
+        const avatarUrl = userMeta?.avatar_url || userMeta?.picture || '';
+        const email = userMeta?.email || '';
+        try {
+          await postgrest.post('/profiles', {
+            id: userId,
+            full_name: fullName,
+            avatar_url: avatarUrl,
+            email: email,
+          });
+          const created = await postgrest.get(`/profiles?id=eq.${userId}`);
+          if (created.data && created.data.length > 0) {
+            setCurrentUser(created.data[0]);
+          }
+        } catch (createErr) {
+          console.error('Failed to create profile for OAuth user:', createErr);
+          // Không logout — vẫn cho user vào app dù profile chưa có
+          setCurrentUser({ id: userId, full_name: fullName, avatar_url: avatarUrl, email });
+        }
       }
     } catch (err) {
       console.error('Failed to fetch public user profile:', err);
-      // If we get a 403 or 401, it also means session is invalid
       if (err.response?.status === 401 || err.response?.status === 403) {
         logout();
       }
@@ -34,16 +52,21 @@ export function AuthProvider({ children }) {
       const activeSession = data?.session;
       setSession(activeSession);
       if (activeSession?.user) {
-        fetchUserProfile(activeSession.user.id);
+        fetchUserProfile(activeSession.user.id, activeSession.user.user_metadata);
       }
       setLoading(false);
     });
 
-    // 2. Listen for auth changes
-    const { data: { subscription } } = gotrue.onAuthStateChange((event, newSession) => {
+    // 2. Listen for auth changes (bao gồm OAuth callback)
+    const { data: { subscription } } = gotrue.onAuthStateChange(async (event, newSession) => {
       setSession(newSession);
       if (newSession?.user) {
-        fetchUserProfile(newSession.user.id);
+        if (event === 'SIGNED_IN') {
+          // Đợi DB trigger handle_new_user chạy xong (tạo profile trong public.profiles)
+          // trước khi fetch — tránh "profile not found" với user OAuth mới
+          await new Promise(resolve => setTimeout(resolve, 1500));
+        }
+        fetchUserProfile(newSession.user.id, newSession.user.user_metadata);
       } else {
         setCurrentUser(null);
       }

@@ -12,6 +12,8 @@ import ExpensesPage from './features/expenses/ExpensesPage.jsx';
 import ProfilePage from './features/auth/ProfilePage.jsx';
 import EditProfilePage from './features/auth/EditProfilePage.jsx';
 import EditTripPage from './features/trips/EditTripPage.jsx';
+import TripDetailPage from './features/trips/TripDetailPage.jsx';
+import StatisticsPage from './features/dashboard/StatisticsPage.jsx';
 
 import { LanguageProvider } from './context/LanguageContext.jsx';
 import MainLayout from './components/layout/MainLayout.jsx';
@@ -89,6 +91,24 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <EditTripPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/trips/:tripId"
+              element={
+                <ProtectedRoute>
+                  <TripDetailPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/statistics"
+              element={
+                <ProtectedRoute>
+                  <StatisticsPage />
                 </ProtectedRoute>
               }
             />

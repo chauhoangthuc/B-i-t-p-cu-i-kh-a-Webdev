@@ -70,5 +70,23 @@
   "tab_all": "Tất cả",
   "tab_upcoming": "Sắp tới / Đang diễn ra",
   "tab_completed": "Đã hoàn thành",
-  "tab_planned": "Đã lên kế hoạch"
+  "tab_planned": "Đã lên kế hoạch",
+  
+  "stats_total_spending": "Tổng chi tiêu",
+  "stats_refund_owed": "Hoàn tiền (Nợ thu)",
+  "stats_amount_owed": "Khoản phải trả",
+  "stats_remaining_budget": "Ngân sách còn lại",
+  "stats_chart_title": "Biểu đồ chi tiết chi tiêu",
+  "stats_category_breakdown": "Phân rã theo danh mục",
+  "stats_cashflow_title": "Dòng tiền chu kỳ này",
+  "stats_recent_transactions": "Giao dịch gần đây",
+  "stats_incoming": "Dòng vào (Nợ thu)",
+  "stats_outgoing": "Dòng ra (Chi tiêu)",
+  "stats_status_paid": "Đã thanh toán",
+  "stats_growth_badge": "Tăng trưởng +5.2%",
+  "stats_vs_last_month": "so với tháng trước",
+  "stats_refund_desc": "Số dư thu hồi từ nhóm",
+  "stats_owed_desc": "Số dư cần quyết toán",
+  "stats_chart_desc": "Kéo thanh trượt để di chuyển mốc thời gian:",
+  "stats_no_transactions": "Chưa ghi nhận giao dịch nào."
 }

@@ -40,6 +40,281 @@ const COVER_PRESETS = [
   }
 ];
 
+// ─── Token generator ───────────────────────────────────────────────────────────
+function generateInviteToken() {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return Array.from(array, b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ─── InviteMemberModal ──────────────────────────────────────────────────────────
+function InviteMemberModal({ trip, currentUser, onClose }) {
+  const [members, setMembers] = useState([]);
+  const [invitations, setInvitations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [email, setEmail] = useState('');
+  const [role, setRole] = useState('member');
+  const [sending, setSending] = useState(false);
+  const [toast, setToast] = useState(null); // { type: 'success'|'error', msg }
+
+  const statusConfig = {
+    pending:  { cls: 'text-amber-700 bg-amber-50 border border-amber-200', label: 'Đang chờ' },
+    accepted: { cls: 'text-green-700 bg-green-50 border border-green-200',  label: 'Đã chấp nhận' },
+    declined: { cls: 'text-red-700 bg-red-50 border border-red-200',        label: 'Từ chối' },
+    expired:  { cls: 'text-gray-500 bg-gray-50 border border-gray-200',     label: 'Hết hạn' },
+  };
+
+  const fetchModalData = async () => {
+    setLoading(true);
+    try {
+      const [membersRes, invsRes] = await Promise.all([
+        postgrest.get(`/trip_members?trip_id=eq.${trip.id}&select=*,user:profiles(*)`),
+        postgrest.get(`/trip_invitations?trip_id=eq.${trip.id}&select=*&order=created_at.desc`)
+      ]);
+      setMembers(membersRes.data || []);
+      setInvitations(invsRes.data || []);
+    } catch (err) {
+      console.error('Failed to load modal data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchModalData();
+  }, [trip.id]);
+
+  const handleInvite = async (e) => {
+    e.preventDefault();
+    setSending(true);
+    setToast(null);
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // Kiểm tra trùng thành viên
+    if (members.some(m => m.user?.email?.toLowerCase() === normalizedEmail)) {
+      setToast({ type: 'error', msg: 'Người này đã là thành viên của chuyến đi.' });
+      setSending(false);
+      return;
+    }
+
+    // Kiểm tra đã gửi lời mời pending chưa
+    if (invitations.some(i => i.invited_email.toLowerCase() === normalizedEmail && i.status === 'pending')) {
+      setToast({ type: 'error', msg: 'Đã gửi lời mời tới email này, đang chờ phản hồi.' });
+      setSending(false);
+      return;
+    }
+
+    try {
+      const token = generateInviteToken();
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+      // 1. Tạo invitation record trong DB (qua PostgREST, user JWT — RLS leader check)
+      await postgrest.post('/trip_invitations', {
+        trip_id: trip.id,
+        invited_email: normalizedEmail,
+        invited_by: currentUser.id,
+        role,
+        token,
+        expires_at: expiresAt,
+      });
+
+      // 2. Gửi email qua Jobs Service (fire-and-forget, không block)
+      fetch('/jobs/api/invitations/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: normalizedEmail,
+          inviterName: currentUser.name || 'Ai đó',
+          tripName: trip.name,
+          inviteLink: `${window.location.origin}/invite/${token}`,
+        }),
+      }).catch(err => console.warn('Email endpoint unreachable (non-blocking):', err.message));
+
+      setToast({ type: 'success', msg: `Đã gửi lời mời tới ${normalizedEmail}!` });
+      setEmail('');
+      await fetchModalData(); // Refresh list
+    } catch (err) {
+      setToast({ type: 'error', msg: 'Lỗi: ' + err.message });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="px-6 py-5 bg-gradient-to-r from-[#0058be] to-[#2170e4] text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-base">Quản lý thành viên</h3>
+              <p className="text-xs text-blue-100 mt-0.5 truncate max-w-[280px]">{trip.name}</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+            >
+              <span className="material-symbols-outlined text-[20px]">close</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-6 max-h-[72vh] overflow-y-auto custom-scrollbar">
+
+          {/* Current Members */}
+          <div>
+            <h4 className="text-[11px] font-bold text-[#424754] uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[14px]">group</span>
+              Thành viên ({members.length})
+            </h4>
+            {loading ? (
+              <div className="text-center text-xs text-gray-400 py-4 animate-pulse">Đang tải...</div>
+            ) : members.length === 0 ? (
+              <p className="text-xs text-[#727785]">Chưa có thành viên nào.</p>
+            ) : (
+              <div className="space-y-2.5">
+                {members.map(m => (
+                  <div key={m.user_id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors">
+                    <div className="w-9 h-9 rounded-full overflow-hidden bg-[#0058be]/10 flex-shrink-0 border border-[#c2c6d6]">
+                      {m.user?.avatar_url ? (
+                        <img src={m.user.avatar_url} alt={m.user.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[#0058be] text-sm font-bold">
+                          {(m.user?.name || 'U').charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-grow min-w-0">
+                      <p className="text-sm font-semibold text-[#191c1d] truncate">{m.user?.name || 'Người dùng'}</p>
+                      <p className="text-[11px] text-[#727785] truncate">{m.user?.email}</p>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${
+                      m.role === 'leader'
+                        ? 'bg-[#0058be]/10 text-[#0058be]'
+                        : 'bg-gray-100 text-[#424754]'
+                    }`}>
+                      {m.role === 'leader' ? 'Trưởng nhóm' : 'Thành viên'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Sent Invitations */}
+          {!loading && invitations.length > 0 && (
+            <div>
+              <h4 className="text-[11px] font-bold text-[#424754] uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[14px]">send</span>
+                Lời mời đã gửi ({invitations.length})
+              </h4>
+              <div className="space-y-2">
+                {invitations.map(inv => {
+                  const cfg = statusConfig[inv.status] || statusConfig.pending;
+                  const initials = inv.invited_email.charAt(0).toUpperCase();
+                  return (
+                    <div key={inv.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors">
+                      {/* Avatar dashed border = chưa tham gia */}
+                      <div className="w-9 h-9 rounded-full bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center text-[#424754] text-sm font-bold flex-shrink-0">
+                        {initials}
+                      </div>
+                      <div className="flex-grow min-w-0">
+                        <p className="text-sm font-semibold text-[#191c1d] truncate">{inv.invited_email}</p>
+                        <p className="text-[11px] text-[#727785]">
+                          {inv.role === 'leader' ? 'Trưởng nhóm' : 'Thành viên'} · {new Date(inv.created_at).toLocaleDateString('vi-VN')}
+                        </p>
+                      </div>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${cfg.cls}`}>
+                        {cfg.label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Divider */}
+          <div className="border-t border-[#f0f1f2]" />
+
+          {/* Invite Form */}
+          <div>
+            <h4 className="text-[11px] font-bold text-[#424754] uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[14px]">person_add</span>
+              Mời thành viên mới
+            </h4>
+
+            {/* Toast */}
+            {toast && (
+              <div className={`text-xs px-3 py-2.5 rounded-xl mb-3 flex items-center gap-2 ${
+                toast.type === 'success'
+                  ? 'bg-green-50 text-green-700 border border-green-200'
+                  : 'bg-red-50 text-red-700 border border-red-200'
+              }`}>
+                <span className="material-symbols-outlined text-[14px]">
+                  {toast.type === 'success' ? 'check_circle' : 'error'}
+                </span>
+                {toast.msg}
+              </div>
+            )}
+
+            <form onSubmit={handleInvite} className="space-y-3">
+              <div>
+                <label className="text-xs font-semibold text-[#424754] block mb-1.5">
+                  Email người được mời *
+                </label>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#727785] text-[18px]">
+                    mail
+                  </span>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="example@email.com"
+                    className="w-full h-10 pl-9 pr-3 border border-[#c2c6d6] rounded-xl text-sm focus:ring-2 focus:ring-[#0058be]/20 focus:border-[#0058be] outline-none transition-all"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-[#424754] block mb-1.5">Vai trò</label>
+                <select
+                  value={role}
+                  onChange={e => setRole(e.target.value)}
+                  className="w-full h-10 px-3 border border-[#c2c6d6] rounded-xl text-sm focus:ring-2 focus:ring-[#0058be]/20 focus:border-[#0058be] outline-none"
+                >
+                  <option value="member">Thành viên</option>
+                  <option value="leader">Trưởng nhóm</option>
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                disabled={sending}
+                className="w-full h-11 bg-[#0058be] hover:bg-[#2170e4] text-white font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-60 shadow-md shadow-[#0058be]/20"
+              >
+                <span className="material-symbols-outlined text-[18px]">send</span>
+                {sending ? 'Đang gửi...' : 'Gửi lời mời'}
+              </button>
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Page ─────────────────────────────────────────────────────────────────
 export default function TripsPage() {
   const { currentUser, session } = useAuth();
   const { setCurrentTripId } = useTrip();
@@ -69,6 +344,9 @@ export default function TripsPage() {
   const [selectedImage, setSelectedImage] = useState(COVER_PRESETS[0].url);
   const fileInputRef = useRef(null);
 
+  // Invite modal state
+  const [inviteTrip, setInviteTrip] = useState(null); // trip object khi mở modal
+
   // Fetch all trips
   const fetchTrips = async () => {
     setLoading(true);
@@ -87,7 +365,12 @@ export default function TripsPage() {
 
   useEffect(() => {
     fetchTrips();
-  }, []);
+    // Tự động mở Modal tạo chuyến đi mới nếu URL chứa tham số ?create=true
+    const params = new URLSearchParams(location.search);
+    if (params.get('create') === 'true') {
+      setShowCreateModal(true);
+    }
+  }, [location.search]);
 
   // Filter tabs logic
   useEffect(() => {
@@ -98,8 +381,8 @@ export default function TripsPage() {
     // Apply search filter if query parameter exists
     if (searchVal.trim()) {
       const q = searchVal.toLowerCase();
-      result = result.filter(t => 
-        t.name.toLowerCase().includes(q) || 
+      result = result.filter(t =>
+        t.name.toLowerCase().includes(q) ||
         (t.destination && t.destination.toLowerCase().includes(q))
       );
     }
@@ -325,11 +608,21 @@ export default function TripsPage() {
                   handleSelectTrip={handleSelectTrip}
                   currentUser={currentUser}
                   navigate={navigate}
+                  onInviteClick={(trip) => setInviteTrip(trip)}
                 />
               ))}
             </div>
           </SortableContext>
         </DndContext>
+      )}
+
+      {/* Invite Member Modal */}
+      {inviteTrip && (
+        <InviteMemberModal
+          trip={inviteTrip}
+          currentUser={currentUser}
+          onClose={() => setInviteTrip(null)}
+        />
       )}
 
       {/* Create Trip Modal */}
@@ -525,7 +818,8 @@ export default function TripsPage() {
   );
 }
 
-function SortableTripItem({ trip, handleSelectTrip, currentUser, navigate }) {
+// ─── SortableTripItem ───────────────────────────────────────────────────────────
+function SortableTripItem({ trip, handleSelectTrip, currentUser, navigate, onInviteClick }) {
   const { language, t } = useLanguage();
   const {
     attributes,
@@ -617,20 +911,35 @@ function SortableTripItem({ trip, handleSelectTrip, currentUser, navigate }) {
           </div>
         </div>
 
-        {/* Footer (Avatars + drag indicator handle) */}
+        {/* Footer: Invite button + drag handle */}
         <div className="flex justify-between items-center pt-3 border-t border-[#f0f1f2] mt-2">
-          <div className="flex -space-x-1.5">
-            <div className="w-6 h-6 rounded-full border border-white bg-blue-100 text-[9px] font-extrabold flex items-center justify-center">U</div>
-            <div className="w-6 h-6 rounded-full border border-white bg-gray-200 text-[9px] font-extrabold flex items-center justify-center">+1</div>
-          </div>
+          {/* Invite button — chỉ hiện cho creator/leader */}
+          {isCreator ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onInviteClick(trip);
+              }}
+              title={language === 'vi' ? 'Mời thành viên' : 'Invite members'}
+              className="flex items-center gap-1 text-[10px] font-bold text-[#0058be] hover:bg-[#0058be]/10 px-2 py-1 rounded-lg transition-all"
+            >
+              <span className="material-symbols-outlined text-[16px]">person_add</span>
+              {language === 'vi' ? 'Mời' : 'Invite'}
+            </button>
+          ) : (
+            <div className="flex -space-x-1.5">
+              <div className="w-6 h-6 rounded-full border border-white bg-blue-100 text-[9px] font-extrabold flex items-center justify-center">U</div>
+              <div className="w-6 h-6 rounded-full border border-white bg-gray-200 text-[9px] font-extrabold flex items-center justify-center">+1</div>
+            </div>
+          )}
           
-          {/* Drag handle instead of Details button */}
+          {/* Drag handle */}
           <div 
             {...attributes} 
             {...listeners} 
             className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-[#0058be] p-1.5 hover:bg-gray-100 rounded-lg flex items-center justify-center transition-all touch-none"
             title={t('drag_to_sort')}
-            onClick={(e) => e.stopPropagation()} // Prevent selecting trip
+            onClick={(e) => e.stopPropagation()}
           >
             <span className="material-symbols-outlined text-[20px]">drag_indicator</span>
           </div>

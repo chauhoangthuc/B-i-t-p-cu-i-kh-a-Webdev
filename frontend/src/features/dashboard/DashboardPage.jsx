@@ -61,13 +61,15 @@ function SortableTripCard({ trip, isSelected, setCurrentTripId, navigate }) {
     <div
       ref={setNodeRef}
       style={style}
-      className={`relative group bg-white border rounded-2xl overflow-hidden flex flex-col justify-between transition-all duration-300 shadow-sm hover:shadow-md ${
-        isSelected ? 'border-[#0058be] ring-1 ring-[#0058be]' : 'border-[#c2c6d6]'
+      onClick={() => setCurrentTripId(trip.id)}
+      className={`relative group bg-white border rounded-2xl overflow-hidden flex flex-col justify-between transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer ${
+        isSelected ? 'border-[#0058be] ring-1 ring-[#0058be]' : 'border-[#c2c6d6] hover:border-[#0058be]/70'
       }`}
     >
       <div 
         {...attributes} 
         {...listeners} 
+        onClick={(e) => e.stopPropagation()} // Prevent card selection when dragging
         className="absolute top-3 right-3 w-7 h-7 bg-white/95 hover:bg-white border border-[#c2c6d6] rounded-lg flex items-center justify-center cursor-grab active:cursor-grabbing text-gray-400 hover:text-[#0058be] z-10 opacity-0 group-hover:opacity-100 transition-all duration-200"
         title={t('drag_to_sort')}
       >
@@ -110,21 +112,15 @@ function SortableTripCard({ trip, isSelected, setCurrentTripId, navigate }) {
         </div>
 
         <div className="flex gap-2">
-          {!isSelected ? (
-            <button 
-              onClick={() => setCurrentTripId(trip.id)}
+          <button 
+              onClick={(e) => {
+                e.stopPropagation(); // Avoid double toggling
+                navigate('/trips/' + trip.id);
+              }}
               className="text-[10px] font-bold bg-[#0058be] text-white px-2.5 py-1 rounded-lg hover:bg-[#2170e4] transition-all"
             >
               Chi tiết
             </button>
-          ) : (
-            <button 
-              onClick={() => navigate('/edit-trip/' + trip.id)}
-              className="text-[10px] font-bold border border-[#0058be] text-[#0058be] px-2.5 py-1 rounded-lg hover:bg-[#0058be]/5 transition-all"
-            >
-              Chỉnh sửa
-            </button>
-          )}
         </div>
       </div>
     </div>
@@ -587,7 +583,7 @@ export default function DashboardPage() {
 
       {/* Floating Action Button for New Trip creation */}
       <button 
-        onClick={() => navigate('/trips')}
+        onClick={() => navigate('/trips?create=true')}
         className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-[#0058be] to-[#2170e4] text-white rounded-full flex items-center justify-center shadow-xl shadow-[#0058be]/20 hover:scale-105 active:scale-95 transition-all z-40 group"
         title="Tạo chuyến đi mới"
       >

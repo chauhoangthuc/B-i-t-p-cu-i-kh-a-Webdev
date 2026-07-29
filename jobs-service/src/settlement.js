@@ -30,7 +30,7 @@ export function simplifyDebts(balances) {
     const debtor = debtors[i];
     const creditor = creditors[j];
 
-    // Số tiền cần chuyển đổi tối đa giữa con nợ và chủ nợ
+    // Số tiền cần chuyển đổi tối đa giữa con nợ và chủ nợ (làm tròn 2 chữ số thập phân để tránh lỗi float)
     const amount = Math.min(-debtor.amount, creditor.amount);
 
     if (amount > 0.01) {
@@ -41,8 +41,8 @@ export function simplifyDebts(balances) {
       });
     }
 
-    debtor.amount += amount;
-    creditor.amount -= amount;
+    debtor.amount = Math.round((debtor.amount + amount) * 100) / 100;
+    creditor.amount = Math.round((creditor.amount - amount) * 100) / 100;
 
     if (Math.abs(debtor.amount) < 0.01) i++;
     if (Math.abs(creditor.amount) < 0.01) j++;

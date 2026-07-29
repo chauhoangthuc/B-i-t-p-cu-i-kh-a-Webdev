@@ -7,5 +7,6 @@ export const gotrue = new GoTrueClient({
   detectSessionInUrl: true,
   autoRefreshToken: true,
   persistSession: true,
-  storage: window.localStorage
+  storage: window.localStorage,
+  flowType: 'implicit',   // GoTrue server v2.15.0 không hỗ trợ PKCE
 });

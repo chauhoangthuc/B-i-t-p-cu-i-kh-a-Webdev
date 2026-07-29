@@ -1,0 +1,10 @@
+{
+    "id": "test-ocr-001",
+    "description": "Mock response từ Gemini 2.5 Flash cho hóa đơn ăn uống",
+    "raw_markdown_response": "```json\n{\n  \"total_amount\": 2540,\n  \"currency\": \"THB\",\n  \"category\": \"food\",\n  \"date\": \"2026-07-29\",\n  \"confidence_score\": 0.98,\n  \"items\": [\n    {\"name\": \"Tom Yum\", \"price\": 1200},\n    {\"name\": \"Pad Thai\", \"price\": 1340}\n  ]\n}\n```",
+    "expected_parsed_output": {
+        "amount": 2540,
+        "currency": "THB",
+        "category": "food"
+    }
+}

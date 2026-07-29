@@ -5,17 +5,21 @@ import { useTrip } from '../../context/TripContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useLanguage } from '../../context/LanguageContext.jsx';
 import axios from 'axios';
+import { useLocation } from 'react-router-dom';
 
 export default function ExpensesPage() {
-  const { currentTripId } = useTrip();
+  const { currentTripId, setCurrentTripId } = useTrip();
   const { currentUser } = useAuth();
   const { t } = useLanguage();
 
+  const [trips, setTrips] = useState([]);
+  const [selectedTripId, setSelectedTripId] = useState('');
   const [expenses, setExpenses] = useState([]);
   const [members, setMembers] = useState([]);
   const [settlements, setSettlements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [tripsLoading, setTripsLoading] = useState(true);
 
   // Form states
   const [amount, setAmount] = useState('');
@@ -23,16 +27,66 @@ export default function ExpensesPage() {
   const [exchangeRate, setExchangeRate] = useState(1);
   const [category, setCategory] = useState('food');
   const [description, setDescription] = useState('');
+  const [spentAt, setSpentAt] = useState(new Date().toISOString().split('T')[0]);
   const [selectedShares, setSelectedShares] = useState({}); // userId -> shareAmount
 
+  // Consume routing state from scanned receipt
+  const location = useLocation();
+  useEffect(() => {
+    if (location.state?.scannedData) {
+      const data = location.state.scannedData;
+      if (data.amount) setAmount(data.amount.toString());
+      if (data.currency) {
+        setCurrency(data.currency);
+        if (data.currency === 'VND') setExchangeRate(1);
+        else if (data.currency === 'USD') setExchangeRate(26335);
+        else if (data.currency === 'JPY') setExchangeRate(165);
+      }
+      if (data.category) setCategory(data.category.toLowerCase());
+      if (data.description) setDescription(data.description);
+      if (data.date) setSpentAt(data.date);
+
+      alert('Dữ liệu hóa đơn đã được điền tự động!');
+    }
+  }, [location.state]);
+
+  // 1. Fetch all trips current user is part of
+  useEffect(() => {
+    const fetchTrips = async () => {
+      try {
+        setTripsLoading(true);
+        // Query trips that the user is a member of
+        const res = await postgrest.get('/trips?select=id,name');
+        const availableTrips = res.data || [];
+        setTrips(availableTrips);
+
+        // Set default selected trip
+        if (currentTripId && availableTrips.some(t => t.id === currentTripId)) {
+          setSelectedTripId(currentTripId);
+        } else if (availableTrips.length > 0) {
+          setSelectedTripId(availableTrips[0].id);
+        }
+      } catch (err) {
+        console.error('Failed to fetch user trips:', err);
+      } finally {
+        setTripsLoading(false);
+      }
+    };
+
+    if (currentUser) {
+      fetchTrips();
+    }
+  }, [currentUser, currentTripId]);
+
+  // Fetch trip members for selected trip
   const fetchTripMembers = async () => {
-    if (!currentTripId) return;
+    if (!selectedTripId) return;
     try {
-      const res = await postgrest.get(`/trip_members?trip_id=eq.${currentTripId}&select=*,profiles(*)`);
+      const res = await postgrest.get(`/trip_members?trip_id=eq.${selectedTripId}&select=*,profiles(*)`);
       setMembers(res.data || []);
       // Initialize equal shares
       const initialShares = {};
-      res.data.forEach(m => {
+      (res.data || []).forEach(m => {
         initialShares[m.user_id] = 0;
       });
       setSelectedShares(initialShares);
@@ -41,6 +95,7 @@ export default function ExpensesPage() {
     }
   };
 
+  // Fetch expenses list (using dashboard currentTripId to display active view)
   const fetchExpenses = async () => {
     if (!currentTripId) return;
     try {
@@ -56,6 +111,7 @@ export default function ExpensesPage() {
     }
   };
 
+  // Fetch settlement list (using dashboard currentTripId)
   const fetchSettlement = async () => {
     if (!currentTripId) return;
     try {
@@ -80,6 +136,8 @@ export default function ExpensesPage() {
         if (item.action === 'CREATE_EXPENSE') {
           await postgrest.post('/rpc/create_expense_with_shares', item.payload);
           await db.syncQueue.delete(item.id);
+          // Remove local temporary values cached offline
+          await db.expenses.where('tripId').equals(item.payload.p_trip_id).and(x => x.id.toString().startsWith('temp-')).delete();
         }
       }
       fetchExpenses();
@@ -91,8 +149,13 @@ export default function ExpensesPage() {
     }
   };
 
+  // Trigger loading when selectedTripId changes
   useEffect(() => {
     fetchTripMembers();
+  }, [selectedTripId]);
+
+  // Trigger loading when active dashboard trip changes
+  useEffect(() => {
     fetchExpenses();
     fetchSettlement();
 
@@ -110,6 +173,11 @@ export default function ExpensesPage() {
 
   const handleAddExpense = async (e) => {
     e.preventDefault();
+    if (!selectedTripId) {
+      alert('Vui lòng chọn một chuyến đi trước!');
+      return;
+    }
+
     const parsedAmount = parseFloat(amount);
     const sharesList = Object.keys(selectedShares)
       .filter(uId => selectedShares[uId] > 0)
@@ -119,7 +187,7 @@ export default function ExpensesPage() {
       }));
 
     const payload = {
-      p_trip_id: currentTripId,
+      p_trip_id: selectedTripId,
       p_event_id: null,
       p_amount: parsedAmount,
       p_currency: currency,
@@ -128,7 +196,7 @@ export default function ExpensesPage() {
       p_description: description,
       p_receipt_url: null,
       p_paid_by: currentUser.id,
-      p_spent_at: new Date().toISOString().split('T')[0],
+      p_spent_at: spentAt,
       p_shares: sharesList
     };
 
@@ -140,26 +208,41 @@ export default function ExpensesPage() {
         createdAt: Date.now()
       });
 
-      // Insert fake local expense to update UI instantly
+      // Insert fake local expense only if it matches current active dashboard trip
       const localExpense = {
         id: 'temp-' + Date.now(),
-        trip_id: currentTripId,
+        tripId: selectedTripId,
         amount: parsedAmount,
         currency,
         category,
         description,
-        spent_at: payload.p_spent_at,
-        paid_by: currentUser.id
+        spentAt: payload.p_spent_at,
+        paidBy: currentUser.id
       };
-      setExpenses(prev => [localExpense, ...prev]);
+      
+      await db.expenses.add(localExpense);
+
+      if (selectedTripId === currentTripId) {
+        setExpenses(prev => [localExpense, ...prev]);
+      }
       alert('Ứng dụng đang offline. Chi phí đã được lưu tạm vào hàng đợi và sẽ đồng bộ khi có mạng lại!');
       return;
     }
 
     try {
       await postgrest.post('/rpc/create_expense_with_shares', payload);
-      fetchExpenses();
-      fetchSettlement();
+      
+      // If matches active dashboard trip, update lists instantly
+      if (selectedTripId === currentTripId) {
+        fetchExpenses();
+        fetchSettlement();
+      } else {
+        // Show switch prompt or toast
+        if (window.confirm('Tạo khoản chi thành công! Bạn có muốn chuyển sang xem chi phí của chuyến đi này không?')) {
+          setCurrentTripId(selectedTripId);
+        }
+      }
+
       // Clear form
       setAmount('');
       setDescription('');
@@ -180,15 +263,19 @@ export default function ExpensesPage() {
     setSelectedShares(newShares);
   };
 
-  if (!currentTripId) {
+  if (tripsLoading) {
+    return <div className="text-center py-16 text-sm text-[#727785]">Đang tải danh sách chuyến đi...</div>;
+  }
+
+  if (trips.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] bg-white rounded-xl border border-[#c2c6d6] p-8 max-w-2xl mx-auto shadow-sm text-center">
         <div className="w-16 h-16 bg-[#e8def8] rounded-full flex items-center justify-center mb-4">
           <span className="material-symbols-outlined text-[32px] text-[#6750a4]">receipt_long</span>
         </div>
-        <h2 className="text-xl font-bold text-[#191c1d] mb-2">{t('not_selected_trip')}</h2>
+        <h2 className="text-xl font-bold text-[#191c1d] mb-2">Chưa có chuyến đi nào</h2>
         <p className="text-sm text-gray-500 mb-6 max-w-sm">
-          {t('not_selected_trip_desc')}
+          Vui lòng tạo hoặc tham gia một chuyến đi trước khi thêm các khoản chi tiêu.
         </p>
       </div>
     );
@@ -204,6 +291,21 @@ export default function ExpensesPage() {
         <form onSubmit={handleAddExpense} className="bg-white border border-[#c2c6d6] rounded-xl p-5 shadow-sm space-y-4">
           <h2 className="text-lg font-bold"> {t('add_expense_title')}</h2>
           
+          {/* Trip Selector Field */}
+          <div>
+            <label className="text-xs font-semibold text-[#424754] block mb-1">Chọn chuyến đi *</label>
+            <select
+              className="w-full h-11 px-3 border border-[#c2c6d6] rounded-lg focus:ring-2 focus:ring-[#0058be]/20 focus:border-[#0058be] outline-none"
+              required
+              value={selectedTripId}
+              onChange={(e) => setSelectedTripId(e.target.value)}
+            >
+              {trips.map(trip => (
+                <option key={trip.id} value={trip.id}>{trip.name}</option>
+              ))}
+            </select>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-xs font-medium">{t('amount')}</label>
@@ -271,6 +373,17 @@ export default function ExpensesPage() {
           </div>
 
           <div>
+            <label className="text-xs font-medium">Ngày chi tiêu *</label>
+            <input
+              className="w-full h-11 px-3 border border-[#c2c6d6] rounded-lg"
+              required
+              type="date"
+              value={spentAt}
+              onChange={(e) => setSpentAt(e.target.value)}
+            />
+          </div>
+
+          <div>
             <label className="text-xs font-medium">{t('description')}</label>
             <input
               className="w-full h-11 px-3 border border-[#c2c6d6] rounded-lg"
@@ -328,9 +441,20 @@ export default function ExpensesPage() {
 
         {/* Expenses List */}
         <div className="space-y-3">
-          <h2 className="text-lg font-bold">Danh sách khoản chi</h2>
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-bold">Danh sách khoản chi</h2>
+            {currentTripId && (
+              <span className="text-xs text-[#727785]">
+                Đang hiển thị chuyến đi hiện tại
+              </span>
+            )}
+          </div>
           {loading ? (
             <div>Đang tải danh sách chi tiêu...</div>
+          ) : !currentTripId ? (
+            <div className="bg-white border border-[#c2c6d6] rounded-xl p-8 text-center text-sm text-[#727785]">
+              Vui lòng chọn chuyến đi trên thanh điều hướng để xem danh sách chi tiêu.
+            </div>
           ) : expenses.length === 0 ? (
             <div className="bg-white border border-[#c2c6d6] rounded-xl p-8 text-center text-sm text-[#727785]">
               Chưa ghi nhận chi phí nào cho chuyến đi này.
@@ -367,7 +491,9 @@ export default function ExpensesPage() {
         <div className="bg-white border border-[#c2c6d6] rounded-xl p-5 shadow-sm space-y-4">
           <h3 className="text-sm font-bold border-b border-[#edeeef] pb-2">{t('simplify_debts')}</h3>
           
-          {settlements.length === 0 ? (
+          {!currentTripId ? (
+            <div className="text-xs text-[#727785] text-center py-4">Chọn một chuyến đi để xem quyết toán</div>
+          ) : settlements.length === 0 ? (
             <div className="text-xs text-[#727785] text-center py-4">{t('no_settlements')}</div>
           ) : (
             <div className="space-y-3">

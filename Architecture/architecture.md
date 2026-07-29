@@ -700,7 +700,11 @@ trip-scheduler/
 5. **Giới hạn kích thước file và bảo mật Object Storage** — Khi tải ảnh hóa đơn (receipt) hoặc avatar lên MinIO/S3, Frontend bắt buộc phải xin Pre-signed URL từ Jobs Service để kiểm soát thời gian hiệu lực (expire trong 5-15 phút) và giới hạn dung lượng file tải lên (ví dụ: tối đa 5MB) nhằm tránh tấn công DOS bộ nhớ lưu trữ.
 6. **Xử lý xung đột ID khi đồng bộ Offline PWA** — Khi offline, ứng dụng sinh UUID tạm thời ở client. Khi có mạng và đồng bộ, Service Worker cần gửi đúng UUID tạm đó làm ID chính thức lên database (do database dùng UUID nên client có thể tạo UUID v4 an toàn mà không sợ trùng lặp).
 7. **Bảo mật và duy trì kết nối WebSocket** — WebSocket Server của Jobs Service cần verify JWT token tại thời điểm handshake. Đồng thời, cấu hình cơ chế Ping/Pong để phát hiện kết nối chết và tự động reconnect ở phía Client React PWA.
+8. **Bảo mật & Nhận dạng hóa đơn thông minh (Gemini OCR)** — Tích hợp trực tiếp Google Gemini API (`gemini-2.5-flash`) ở phía Client React PWA. Mã nguồn phân tách rõ:
+   - **MIME type động**: Tự động nhận diện kiểu tệp hình ảnh thực tế của người dùng tải lên để mapping chính xác với `inlineData` của Gemini API.
+   - **Tắt webcam giải phóng tài nguyên**: Ngay khi nhấn chụp hoặc tải file lên, hệ thống lập tức shutdown các track của camera để tránh chiếm dụng tài nguyên phần cứng.
+   - **Robust JSON Parsing**: Dọn dẹp thô Markdown blocks trả về (`/```json/gi`) và bọc việc phân tích cú pháp trong khối try-catch độc lập để bảo đảm không xảy ra crash trắng trang khi AI trả về sai định dạng.
 
 ---
 
-*Hết tài liệu. Đây là bản chốt kiến trúc kỹ thuật phiên bản 2.0 — mọi thay đổi phạm vi sau này nên cập nhật lại tài liệu này trước khi code.*
+*Hết tài liệu. Đây là bản chốt kiến trúc kỹ thuật phiên bản 2.1 — mọi thay đổi phạm vi sau này nên cập nhật lại tài liệu này trước khi code.*

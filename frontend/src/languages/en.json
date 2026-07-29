@@ -70,5 +70,23 @@
   "tab_all": "All",
   "tab_upcoming": "Upcoming / Ongoing",
   "tab_completed": "Completed",
-  "tab_planned": "Planned"
+  "tab_planned": "Planned",
+  
+  "stats_total_spending": "Total Spending",
+  "stats_refund_owed": "Refund (Owed to User)",
+  "stats_amount_owed": "Amount to Pay",
+  "stats_remaining_budget": "Remaining Budget",
+  "stats_chart_title": "Expense Overview Chart",
+  "stats_category_breakdown": "Category Breakdown",
+  "stats_cashflow_title": "Cashflow this Period",
+  "stats_recent_transactions": "Recent Transactions",
+  "stats_incoming": "Incoming (Refunds)",
+  "stats_outgoing": "Outgoing (Spending)",
+  "stats_status_paid": "Paid",
+  "stats_growth_badge": "Growth +5.2%",
+  "stats_vs_last_month": "vs last month",
+  "stats_refund_desc": "Refundable balance from group",
+  "stats_owed_desc": "Owed balance to settle",
+  "stats_chart_desc": "Drag slider to move timeline:",
+  "stats_no_transactions": "No transactions recorded yet."
 }

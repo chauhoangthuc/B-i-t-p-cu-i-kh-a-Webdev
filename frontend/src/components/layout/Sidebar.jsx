@@ -6,7 +6,7 @@ import { useLanguage } from '../../context/LanguageContext.jsx';
 
 export default function Sidebar() {
   const { currentUser, logout } = useAuth();
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const location = useLocation();
 
   const menuItems = [
@@ -14,6 +14,7 @@ export default function Sidebar() {
     { path: '/trips', name: t('menu_trips'), icon: 'flight_takeoff' },
     { path: '/calendar', name: t('menu_calendar'), icon: 'calendar_month' },
     { path: '/expenses', name: t('menu_expenses'), icon: 'payments' },
+    { path: '/statistics', name: language === 'vi' ? 'Quản lý Chi phí' : 'Statistics', icon: 'query_stats' },
     { path: '/profile', name: t('menu_profile'), icon: 'person' }
   ];
 

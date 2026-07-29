@@ -4,6 +4,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+# Copy local PWA .env specifically so Vite builder bakes client-side env keys
+RUN cp .env .env.production || true
 RUN npm run build
 
 # Stage 2: Serve the application with Nginx
