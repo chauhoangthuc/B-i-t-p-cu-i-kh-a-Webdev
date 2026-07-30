@@ -3,6 +3,19 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { TripProvider } from './context/TripContext.jsx';
 import LoginPage from './features/auth/LoginPage.jsx';
+
+// ── ENV DIAGNOSTIC (xoá sau khi xác nhận deploy ổn) ──────────────────────────
+const _url  = import.meta.env.VITE_GOTRUE_URL        || '';
+const _anon = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+console.log(
+  '%c[ENV CHECK]',
+  'background:#0058be;color:#fff;padding:2px 6px;border-radius:4px',
+  '\n  VITE_GOTRUE_URL        =', _url  || '❌ TRỐNG',
+  '\n  VITE_SUPABASE_ANON_KEY =', _anon ? `✅ ${_anon.slice(0,12)}...` : '❌ TRỐNG',
+  '\n  MODE                   =', (_url && _anon) ? '☁️ CLOUD' : '🐳 LOCAL'
+);
+// ─────────────────────────────────────────────────────────────────────────────
+
 import RegisterPage from './features/auth/RegisterPage.jsx';
 import ForgotPasswordPage from './features/auth/ForgotPasswordPage.jsx';
 import DashboardPage from './features/dashboard/DashboardPage.jsx';
