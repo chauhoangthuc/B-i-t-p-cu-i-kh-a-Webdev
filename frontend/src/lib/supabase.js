@@ -1,5 +1,10 @@
 /**
- * supabase.js — Unified Auth Client (Dual-Mode v2)
+ * supabase.js — Unified Auth Client (Dual-Mode v3)
+ *
+ * CLOUD MODE: khi VITE_GOTRUE_URL + VITE_SUPABASE_ANON_KEY có giá trị
+ *             → dùng @supabase/supabase-js (tự inject apikey + Bearer)
+ * LOCAL MODE: khi chạy localhost mà thiếu env → dùng raw GoTrueClient
+ *             → nếu đang trên non-localhost mà thiếu key thì throw lỗi rõ
  */
 import { createClient } from '@supabase/supabase-js';
 import { GoTrueClient } from '@supabase/gotrue-js';
@@ -7,41 +12,68 @@ import { GoTrueClient } from '@supabase/gotrue-js';
 const SUPABASE_URL  = (import.meta.env.VITE_GOTRUE_URL || import.meta.env.VITE_SUPABASE_URL || '').trim();
 const SUPABASE_ANON = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
 
+// Runtime: kiểm tra xem đang chạy trên localhost hay không
+const IS_LOCALHOST = typeof window !== 'undefined'
+  && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+// Log diagnostic để audit sau khi deploy
+console.log(
+  '%c[TripManager Auth]',
+  'background:#0058be;color:#fff;padding:2px 8px;border-radius:4px;font-weight:bold',
+  `\n  URL  = ${SUPABASE_URL  || '❌ TRỐNG'}`,
+  `\n  KEY  = ${SUPABASE_ANON ? `✅ ${SUPABASE_ANON.slice(0,16)}...` : '❌ TRỐNG'}`,
+  `\n  HOST = ${typeof window !== 'undefined' ? window.location.hostname : 'SSR'}`,
+  `\n  MODE = ${(SUPABASE_URL && SUPABASE_ANON) ? '☁️ CLOUD' : (IS_LOCALHOST ? '🐳 LOCAL' : '🔴 CONFIG ERROR')}`,
+);
+
 let _supabase;
 let _gotrue;
 
-// Kiểm tra xem có đầy đủ cấu hình Cloud không
 if (SUPABASE_URL && SUPABASE_ANON) {
-  // ── ☁️ CLOUD MODE (Vercel) ──
-  console.log("🚀 [Supabase] Chạy ở chế độ CLOUD MODE");
-  
+  // ── ☁️ CLOUD MODE ──────────────────────────────────────────────────────────
+  // createClient tự inject: apikey header + Authorization Bearer + token refresh
+  // x-client-info sẽ hiện "supabase-js/2.x.x" (không phải gotrue-js)
   _supabase = createClient(SUPABASE_URL, SUPABASE_ANON, {
     auth: {
-      autoRefreshToken: true,
-      persistSession: true,
+      autoRefreshToken:   true,
+      persistSession:     true,
       detectSessionInUrl: true,
       flowType: 'implicit',
-      storage: window.localStorage,
+      storage:  window.localStorage,
     },
   });
   _gotrue = _supabase.auth;
 
-} else {
-  // ── 🐳 LOCAL MODE (Docker / Không có env) ──
-  console.log("🐳 [Supabase] Chạy ở chế độ LOCAL MODE");
-  
+} else if (IS_LOCALHOST) {
+  // ── 🐳 LOCAL MODE (Docker) ─────────────────────────────────────────────────
+  // Chỉ kích hoạt khi thực sự ở localhost — không ảnh hưởng deploy Cloud
   const LOCAL_GOTRUE_URL = SUPABASE_URL || 'http://localhost:9999';
+  console.info(`%c[TripManager] 🐳 LOCAL MODE → ${LOCAL_GOTRUE_URL}`, 'color:#0058be');
 
   _gotrue = new GoTrueClient({
-    url: `${LOCAL_GOTRUE_URL}/auth/v1`,
-    headers: {},
-    autoRefreshToken: true,
-    persistSession: true,
+    url:                `${LOCAL_GOTRUE_URL}/auth/v1`,
+    headers:            {},
+    autoRefreshToken:   true,
+    persistSession:     true,
     detectSessionInUrl: true,
-    storage: window.localStorage,
-    flowType: 'implicit',
+    storage:            window.localStorage,
+    flowType:           'implicit',
   });
+  _supabase = { auth: _gotrue };
 
+} else {
+  // ── 🔴 CONFIG ERROR — đang deploy trên Cloud nhưng thiếu env vars ─────────
+  // Throw ngay lập tức để lỗi hiện rõ ràng thay vì âm thầm gọi sai endpoint
+  const msg = [
+    '[TripManager] CRITICAL: Thiếu Supabase config trên Cloud deployment!',
+    `  VITE_GOTRUE_URL        = "${SUPABASE_URL  || 'TRỐNG'}"`,
+    `  VITE_SUPABASE_ANON_KEY = "${SUPABASE_ANON || 'TRỐNG'}"`,
+    'Kiểm tra Environment Variables trên Vercel Dashboard và redeploy.',
+  ].join('\n');
+  console.error(msg);
+  // Tạo stub để app không crash hoàn toàn, nhưng mọi auth call sẽ fail rõ ràng
+  const errFn = () => Promise.reject(new Error('Supabase chưa được cấu hình. Kiểm tra VITE_SUPABASE_ANON_KEY trên Vercel.'));
+  _gotrue   = { signUp: errFn, signInWithPassword: errFn, signInWithOAuth: errFn, getSession: errFn, onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }) };
   _supabase = { auth: _gotrue };
 }
 
