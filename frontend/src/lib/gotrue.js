@@ -7,6 +7,7 @@ export const gotrue = new GoTrueClient({
   url: `${GOTRUE_URL}/auth/v1`,
   headers: {
     apikey: SUPABASE_ANON_KEY,
+    Authorization: `Bearer ${SUPABASE_ANON_KEY}`
   },
   detectSessionInUrl: true,
   autoRefreshToken: true,
