@@ -1,15 +1,14 @@
 /**
- * supabase.js — Unified Auth Client (Dual-Mode v3)
+ * supabase.js — Unified Auth Client (Dual-Mode v4)
  *
- * CLOUD MODE: khi VITE_GOTRUE_URL + VITE_SUPABASE_ANON_KEY có giá trị
+ * CLOUD MODE: khi VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY có giá trị
  *             → dùng @supabase/supabase-js (tự inject apikey + Bearer)
  * LOCAL MODE: khi chạy localhost mà thiếu env → dùng raw GoTrueClient
- *             → nếu đang trên non-localhost mà thiếu key thì throw lỗi rõ
  */
 import { createClient } from '@supabase/supabase-js';
 import { GoTrueClient } from '@supabase/gotrue-js';
 
-const SUPABASE_URL  = (import.meta.env.VITE_GOTRUE_URL || import.meta.env.VITE_SUPABASE_URL || '').trim();
+const SUPABASE_URL  = (import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_GOTRUE_URL || '').trim();
 const SUPABASE_ANON = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
 
 // Runtime: kiểm tra xem đang chạy trên localhost hay không
@@ -31,8 +30,8 @@ let _gotrue;
 
 if (SUPABASE_URL && SUPABASE_ANON) {
   // ── ☁️ CLOUD MODE ──────────────────────────────────────────────────────────
-  // createClient tự inject: apikey header + Authorization Bearer + token refresh
-  // x-client-info sẽ hiện "supabase-js/2.x.x" (không phải gotrue-js)
+  // createClient yêu cầu chính xác Base URL (https://[PROJECT-ID].supabase.co)
+  // để tự inject apikey header + Authorization Bearer + token refresh
   _supabase = createClient(SUPABASE_URL, SUPABASE_ANON, {
     auth: {
       autoRefreshToken:   true,
@@ -46,7 +45,6 @@ if (SUPABASE_URL && SUPABASE_ANON) {
 
 } else if (IS_LOCALHOST) {
   // ── 🐳 LOCAL MODE (Docker) ─────────────────────────────────────────────────
-  // Chỉ kích hoạt khi thực sự ở localhost — không ảnh hưởng deploy Cloud
   const LOCAL_GOTRUE_URL = SUPABASE_URL || 'http://localhost:9999';
   console.info(`%c[TripManager] 🐳 LOCAL MODE → ${LOCAL_GOTRUE_URL}`, 'color:#0058be');
 
@@ -63,16 +61,14 @@ if (SUPABASE_URL && SUPABASE_ANON) {
 
 } else {
   // ── 🔴 CONFIG ERROR — đang deploy trên Cloud nhưng thiếu env vars ─────────
-  // Throw ngay lập tức để lỗi hiện rõ ràng thay vì âm thầm gọi sai endpoint
   const msg = [
     '[TripManager] CRITICAL: Thiếu Supabase config trên Cloud deployment!',
-    `  VITE_GOTRUE_URL        = "${SUPABASE_URL  || 'TRỐNG'}"`,
+    `  VITE_SUPABASE_URL      = "${SUPABASE_URL  || 'TRỐNG'}"`,
     `  VITE_SUPABASE_ANON_KEY = "${SUPABASE_ANON || 'TRỐNG'}"`,
     'Kiểm tra Environment Variables trên Vercel Dashboard và redeploy.',
   ].join('\n');
   console.error(msg);
-  // Tạo stub để app không crash hoàn toàn, nhưng mọi auth call sẽ fail rõ ràng
-  const errFn = () => Promise.reject(new Error('Supabase chưa được cấu hình. Kiểm tra VITE_SUPABASE_ANON_KEY trên Vercel.'));
+  const errFn = () => Promise.reject(new Error('Supabase chưa được cấu hình. Kiểm tra VITE_SUPABASE_URL và VITE_SUPABASE_ANON_KEY trên Vercel.'));
   _gotrue   = { signUp: errFn, signInWithPassword: errFn, signInWithOAuth: errFn, getSession: errFn, onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }) };
   _supabase = { auth: _gotrue };
 }
