@@ -14,11 +14,12 @@
  * Export: `supabase` và `gotrue` — interface giống nhau ở cả 2 môi trường.
  */
 
-import { GoTrueClient }    from '@supabase/gotrue-js';
-import { createClient }    from '@supabase/supabase-js';
+import { GoTrueClient } from '@supabase/gotrue-js';
+import { createClient } from '@supabase/supabase-js';
+const SUPABASE_URL = (import.meta.env.VITE_GOTRUE_URL || '').trim();
+const SUPABASE_ANON = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
 
-const SUPABASE_URL  = import.meta.env.VITE_GOTRUE_URL        || '';
-const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+console.log("DEBUG CLOUD MODE CHECK:", { SUPABASE_URL, SUPABASE_ANON });
 
 let _supabase;
 let _gotrue;
@@ -28,11 +29,11 @@ if (SUPABASE_URL && SUPABASE_ANON) {
   // createClient tự xử lý: apikey header, Authorization Bearer, token refresh.
   _supabase = createClient(SUPABASE_URL, SUPABASE_ANON, {
     auth: {
-      autoRefreshToken:   true,
-      persistSession:     true,
+      autoRefreshToken: true,
+      persistSession: true,
       detectSessionInUrl: true,
       flowType: 'implicit', // GoTrue v2 — không dùng PKCE
-      storage:  window.localStorage,
+      storage: window.localStorage,
     },
   });
   _gotrue = _supabase.auth;
@@ -51,13 +52,13 @@ if (SUPABASE_URL && SUPABASE_ANON) {
   }
 
   _gotrue = new GoTrueClient({
-    url:                `${LOCAL_GOTRUE_URL}/auth/v1`,
-    headers:            {},  // Local GoTrue không cần apikey header
-    autoRefreshToken:   true,
-    persistSession:     true,
+    url: `${LOCAL_GOTRUE_URL}/auth/v1`,
+    headers: {},  // Local GoTrue không cần apikey header
+    autoRefreshToken: true,
+    persistSession: true,
     detectSessionInUrl: true,
-    storage:            window.localStorage,
-    flowType:           'implicit', // gotrue:v2.15.0 không hỗ trợ PKCE
+    storage: window.localStorage,
+    flowType: 'implicit', // gotrue:v2.15.0 không hỗ trợ PKCE
   });
 
   // Stub tương thích — postgrest.js chỉ gọi supabase.auth.getSession()
@@ -65,5 +66,5 @@ if (SUPABASE_URL && SUPABASE_ANON) {
 }
 
 export const supabase = _supabase;
-export const gotrue   = _gotrue;
+export const gotrue = _gotrue;
 
