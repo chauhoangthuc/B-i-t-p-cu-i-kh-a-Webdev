@@ -1,26 +1,17 @@
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-export default defineConfig(({ mode }) => {
-  // Đọc TẤT CẢ env vars (kể cả không có tiền tố VITE_) từ .env file và process.env
-  // Trên Vercel: process.env đã có sẵn các biến được set trong Dashboard
-  // loadEnv đọc .env file; process.env chứa biến từ Vercel Dashboard.
-  // Dùng cả hai để đảm bảo luôn có giá trị dù môi trường khác nhau.
-  const env = loadEnv(mode, process.cwd(), '');
-  const get = (key) => env[key] || process.env[key] || '';
+// Diagnostic log — hiện trong Vercel Build Logs để kiểm tra env vars
+console.log('[Vite Build] ENV CHECK:');
+console.log('  VITE_GOTRUE_URL        =', process.env.VITE_GOTRUE_URL        ? '✅ CÓ' : '❌ THIẾU');
+console.log('  VITE_SUPABASE_ANON_KEY =', process.env.VITE_SUPABASE_ANON_KEY ? '✅ CÓ' : '❌ THIẾU');
+console.log('  VITE_GEMINI_API_KEY    =', process.env.VITE_GEMINI_API_KEY    ? '✅ CÓ' : '❌ THIẾU');
 
-  return {
-  define: {
-    // Nhúng CỨNG vào bundle tại build-time — không phụ thuộc inject runtime.
-    // Ưu tiên: loadEnv(.env file) → process.env (Vercel Dashboard) → ''
-    'import.meta.env.VITE_GOTRUE_URL':        JSON.stringify(get('VITE_GOTRUE_URL')),
-    'import.meta.env.VITE_SUPABASE_URL':      JSON.stringify(get('VITE_SUPABASE_URL')),
-    'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(get('VITE_SUPABASE_ANON_KEY')),
-    'import.meta.env.VITE_POSTGREST_URL':     JSON.stringify(get('VITE_POSTGREST_URL')),
-    'import.meta.env.VITE_GEMINI_API_KEY':    JSON.stringify(get('VITE_GEMINI_API_KEY')),
-    'import.meta.env.VITE_WS_URL':            JSON.stringify(get('VITE_WS_URL')),
-  },
+// Vite tự động inject tất cả biến có prefix VITE_ từ process.env
+// vào import.meta.env.* — KHÔNG cần define block thủ công.
+// define block với fallback || '' sẽ OVERRIDE và làm rỗng các biến Vercel inject.
+export default defineConfig({
   plugins: [
 
     react(),
@@ -98,6 +89,5 @@ export default defineConfig(({ mode }) => {
   server: {
     port: 5173
   }
-  }; // đóng return {}
-}); // đóng defineConfig(() => {})
+});
 
