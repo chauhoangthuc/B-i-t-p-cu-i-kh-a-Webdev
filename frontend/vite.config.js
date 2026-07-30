@@ -1,9 +1,26 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  // Đọc TẤT CẢ env vars (kể cả không có tiền tố VITE_) từ .env file và process.env
+  // Trên Vercel: process.env đã có sẵn các biến được set trong Dashboard
+  const env = loadEnv(mode, process.cwd(), '');
+
+  return {
+  define: {
+    // Nhúng cứng (hard-code) giá trị vào bundle tại build time.
+    // Vite thay thế các chuỗi này bằng giá trị thực ngay khi compile —
+    // đảm bảo không bao giờ bị rỗng dù Vercel inject muộn hay có vấn đề cache.
+    'import.meta.env.VITE_GOTRUE_URL':        JSON.stringify(env.VITE_GOTRUE_URL        || ''),
+    'import.meta.env.VITE_SUPABASE_URL':      JSON.stringify(env.VITE_SUPABASE_URL      || ''),
+    'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY || ''),
+    'import.meta.env.VITE_POSTGREST_URL':     JSON.stringify(env.VITE_POSTGREST_URL     || ''),
+    'import.meta.env.VITE_GEMINI_API_KEY':    JSON.stringify(env.VITE_GEMINI_API_KEY    || ''),
+    'import.meta.env.VITE_WS_URL':            JSON.stringify(env.VITE_WS_URL            || ''),
+  },
   plugins: [
+
     react(),
     VitePWA({
       registerType: 'autoUpdate',
@@ -79,4 +96,6 @@ export default defineConfig({
   server: {
     port: 5173
   }
-});
+  }; // đóng return {}
+}); // đóng defineConfig(() => {})
+
