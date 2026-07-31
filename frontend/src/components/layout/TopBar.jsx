@@ -118,7 +118,7 @@ export default function TopBar({ tripName }) {
   const pendingCount = invitations.length;
 
   return (
-    <header className="h-16 sticky top-0 bg-white/80 backdrop-blur-md border-b border-[#c2c6d6] z-40 px-6 flex items-center justify-between">
+    <header className="w-full h-16 sticky top-0 bg-white/80 backdrop-blur-md border-b border-[#c2c6d6] z-40 px-6 flex items-center justify-between">
       <div className="flex items-center gap-4">
         {/* Trip Switcher Dropdown Button */}
         <button 
