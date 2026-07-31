@@ -17,6 +17,7 @@
 * [✨ Tính năng nổi bật](#-tính-năng-nổi-bật)
 * [💻 Công nghệ sử dụng](#-công-nghệ-sử-dụng)
 * [🔗 Link Tài nguyên & Repo](#-link-tài-nguyên--repo)
+* [🚀 Deploy](#-deploy)
 * [📊 So sánh tính năng với architecture.md](#-so-sánh-tính-năng-so-với-architecturemd)
 * [📁 Cấu trúc dự án](#-cấu-trúc-dự-án)
 * [🐳 Hướng dẫn cài đặt & sử dụng Docker](#-hướng-dẫn-cài-đặt--sử-dụng-docker)
@@ -71,6 +72,24 @@
 ## 🔗 Link Tài nguyên & Repo
 * 📁 **Thư mục Google Drive (Giao diện mẫu & Video Demo):** [Google Drive Folder](https://drive.google.com/drive/folders/1nfEWoB8lApeo8INd3jDIP6f10Vs4YR7U?usp=drive_link)
 * 🐙 **GitHub Repository (Mã nguồn dự án):** [GitHub Repo](https://github.com/chauhoangthuc/B-i-t-p-cu-i-kh-a-Webdev)
+
+---
+
+## 🚀 Deploy
+
+Ứng dụng hiện đã được triển khai chính thức trên nền tảng **Vercel**. Bạn có thể truy cập trực tiếp và trải nghiệm giao diện cũng như toàn bộ các tính năng của ứng dụng:
+
+<p align="center">
+  <a href="https://b-i-t-p-cu-i-kh-a-webdev.vercel.app/" target="_blank">
+    <img src="https://img.shields.io/badge/Deploy%20on-Vercel-black?style=for-the-badge&logo=vercel&logoColor=white" alt="Deploy status" />
+  </a>
+  <a href="https://b-i-t-p-cu-i-kh-a-webdev.vercel.app/" target="_blank">
+    <img src="https://img.shields.io/badge/Demo%20Live-Click%20Here-success?style=for-the-badge&logo=rocket&color=0058be" alt="Demo Live" />
+  </a>
+</p>
+
+> [!TIP]
+> **Link truy cập nhanh:** 👉 **[b-i-t-p-cu-i-kh-a-webdev.vercel.app](https://b-i-t-p-cu-i-kh-a-webdev.vercel.app/)**
 
 ---
 
